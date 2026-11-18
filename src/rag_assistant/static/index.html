@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FR/EN assistant: French renting and work rules</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 760px; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; color: #1a1a1a; }
+  textarea { width: 100%; min-height: 4.5rem; font: inherit; padding: .5rem; box-sizing: border-box; }
+  button { font: inherit; padding: .45rem 1rem; margin: .5rem .5rem 0 0; cursor: pointer; }
+  .muted { color: #555; font-size: .9rem; }
+  #out { margin-top: 1.5rem; white-space: pre-wrap; }
+  .src { margin: .4rem 0; font-size: .92rem; }
+  .err { color: #a40000; }
+</style>
+</head>
+<body>
+<h1>Ask about renting or work in France</h1>
+<p class="muted">Questions in English or French. Answers use only official pages from
+<a href="https://www.service-public.gouv.fr">service-public.gouv.fr</a> (snapshot of 18 November 2026,
+Licence Ouverte 2.0) and cite them. This is a portfolio project, not legal advice.</p>
+
+<label for="q">Your question</label>
+<textarea id="q">I rent a furnished flat. How much notice must I give my landlord?</textarea>
+<button id="ask">Ask</button>
+<button id="search">Show matching pages only</button>
+<div id="out" aria-live="polite"></div>
+
+<script>
+const out = document.getElementById("out");
+function esc(s) { return s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+async function call(path) {
+  out.textContent = "Working...";
+  const res = await fetch(path, {method: "POST", headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({question: document.getElementById("q").value})});
+  const data = await res.json();
+  if (!res.ok) { out.innerHTML = `<p class="err">${esc(data.detail ? String(data.detail) : "Error")}</p>`; return; }
+  if (path === "/ask") {
+    let html = `<p>${esc(data.answer)}</p><h2>Sources</h2>`;
+    for (const c of data.citations) html += `<div class="src">[${c.n}] <a href="${esc(c.url)}" target="_blank" rel="noopener">${esc(c.title)}</a> <span class="muted">${esc(c.section)}</span></div>`;
+    if (data.tool_calls.length) html += `<p class="muted">Date tool used: ${esc(JSON.stringify(data.tool_calls))}</p>`;
+    out.innerHTML = html;
+  } else {
+    out.innerHTML = data.results.map((r, i) => `<div class="src">${i + 1}. <a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.page_title)}</a> <span class="muted">${esc(r.section)}</span></div>`).join("");
+  }
+}
+document.getElementById("ask").onclick = () => call("/ask");
+document.getElementById("search").onclick = () => call("/search");
+</script>
+</body>
+</html>
