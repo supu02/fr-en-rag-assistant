@@ -1,0 +1,40 @@
+name: Answer evaluation (manual, uses the Mistral API)
+
+# Runs only when started by hand (Actions tab > Run workflow), because it
+# calls a paid/limited API. Needs the repository secret MISTRAL_API_KEY.
+on:
+  workflow_dispatch:
+    inputs:
+      variants:
+        description: "Variants to run (clean typos paraphrase injection)"
+        default: "clean"
+
+jobs:
+  answer-eval:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: src
+      MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements*.txt
+      - run: pip install -r requirements.txt
+      - uses: actions/cache@v4
+        with:
+          path: |
+            .cache/fastembed
+            data/index
+          key: index-${{ hashFiles('data/corpus/chunks.jsonl', 'src/rag_assistant/embeddings.py', 'src/rag_assistant/index.py', 'requirements.txt') }}
+      - run: test -d data/index/qdrant || python -m rag_assistant.index
+      - name: Run fresh (ignore the committed raw answers)
+        run: rm -rf results/answers
+      - run: python -m evaluation.answer_eval --variants ${{ inputs.variants }} --check
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: answer-results
+          path: results/

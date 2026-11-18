@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  tests:
+    name: Lint and unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements*.txt
+      - run: pip install -r requirements-dev.txt
+      - run: ruff check src evaluation tests
+      - run: pytest -q
+        env:
+          PYTHONPATH: src
+
+  retrieval-eval:
+    name: Retrieval evaluation (regression thresholds)
+    needs: tests
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: src
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements*.txt
+      - run: pip install -r requirements.txt
+      - name: README numbers match the saved results
+        run: python -m evaluation.report --check
+      - name: Cache embedding model and index
+        uses: actions/cache@v4
+        with:
+          path: |
+            .cache/fastembed
+            data/index
+          key: index-${{ hashFiles('data/corpus/chunks.jsonl', 'src/rag_assistant/embeddings.py', 'src/rag_assistant/index.py', 'requirements.txt') }}
+      - name: Build the vector index (skipped when cached)
+        run: test -d data/index/qdrant || python -m rag_assistant.index
+      - name: Retrieval eval, fail below thresholds
+        run: python -m evaluation.retrieval_eval --check
+      - uses: actions/upload-artifact@v4
+        with:
+          name: retrieval-results
+          path: results/retrieval.json
+
+  docker:
+    name: Docker build and smoke test
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t fr-en-rag-assistant .
+      - name: Run the container and call the API
+        run: |
+          docker run -d -p 8000:8000 --name app fr-en-rag-assistant
+          for i in $(seq 1 60); do curl -sf localhost:8000/health && break; sleep 2; done
+          curl -sf localhost:8000/health
+          curl -sf -X POST localhost:8000/search -H 'Content-Type: application/json' \
+            -d '{"question": "Quel préavis pour quitter un logement meublé ?"}' \
+            | python3 -c "import json,sys; r=json.load(sys.stdin)['results']; assert r; print('top result:', r[0]['page_title'])"
+      - if: always()
+        run: docker logs app || true

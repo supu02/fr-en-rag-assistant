@@ -1,0 +1,15 @@
+# Never send secrets or local files into the image
+.env
+.venv/
+.git/
+.github/
+.cache/
+data/raw/
+data/index/
+results/
+tests/
+evaluation/
+docs/
+**/__pycache__/
+*.pyc
+.DS_Store
