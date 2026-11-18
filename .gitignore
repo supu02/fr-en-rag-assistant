@@ -1,0 +1,17 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# Secrets: never commit your API key
+.env
+
+# Raw download (24 MB) and generated index: rebuilt by scripts
+data/raw/
+data/index/
+.cache/
+
+.DS_Store
