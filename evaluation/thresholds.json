@@ -1,0 +1,9 @@
+{
+  "_comment": "CI fails if a metric drops below these values. Set about 2 questions (0.044) below the values measured on 2026-11-18, to allow tiny numeric differences between machines.",
+  "retrieval": {
+    "auto/fr/hit@5": 0.93,
+    "auto/en/hit@5": 0.64,
+    "robustness:typos/fr/hit@5": 0.86,
+    "robustness:paraphrase/fr/hit@5": 0.75
+  }
+}
