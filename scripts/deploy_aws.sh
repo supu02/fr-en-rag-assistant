@@ -35,3 +35,21 @@ echo "Deploying to AWS account ${ACCOUNT}, Region ${REGION}."
 
 sam build
 sam deploy --region "$REGION"
+
+# Warm-up: the first start after a deployment is slow (about 2 minutes on 19 Nov 2026, against
+# about 10 s later), because Lambda reads the new image's files for the first time. Make that
+# wait here rather than for the first visitor.
+STACK=$(sed -n 's/^stack_name *= *"\(.*\)"/\1/p' samconfig.toml)
+URL=$(aws cloudformation describe-stacks --region "$REGION" --stack-name "$STACK" \
+  --query "Stacks[0].Outputs[?OutputKey=='ApiUrl'].OutputValue" --output text)
+echo "Waking up the new version at ${URL} (can take about 2 minutes)..."
+for attempt in 1 2 3; do
+  # If the first start runs past the function's timeout, Lambda starts again; the second
+  # attempt is faster because part of the image is already cached.
+  if curl -sf --max-time 150 -o /dev/null -w "Ready: /health answered in %{time_total} s.\n" "${URL%/}/health"; then
+    exit 0
+  fi
+  echo "Not ready yet (attempt ${attempt} of 3)."
+done
+echo "The site did not answer. Check the logs: sam logs --stack-name ${STACK} --tail"
+exit 1

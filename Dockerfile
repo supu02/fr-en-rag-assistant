@@ -13,19 +13,26 @@ RUN useradd --create-home --uid 1000 appuser
 WORKDIR /app
 
 # 1) Dependencies first: this layer is cached while only the code changes.
+#    The layers go from what changes least to what changes most.
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-# 2) Code and the committed corpus snapshot (no raw download, no secrets).
 RUN mkdir -p /app/data/index /app/.cache && chown -R appuser /app
-COPY --chown=appuser src ./src
-COPY --chown=appuser data/corpus ./data/corpus
 USER appuser
 
-# 3) Build the vector index at build time: downloads the embedding model
-#    (about 470 MB) and embeds the chunks once. The container then starts
-#    fast and needs no network for search. Only /ask calls the LLM (Amazon Bedrock).
+# 2) Build the vector index at build time: downloads the embedding model (about 470 MB)
+#    and embeds the committed corpus snapshot once. The container then starts fast and
+#    needs no network for search. Only /ask calls the LLM (Amazon Bedrock).
+#    Only the files that build the index are copied before this step, so a change to the
+#    rest of the code does not rebuild it (several minutes of CPU, and a new 500 MB layer
+#    to upload). A change to these files or to the corpus does.
+COPY --chown=appuser src/rag_assistant/__init__.py src/rag_assistant/config.py \
+     src/rag_assistant/embeddings.py src/rag_assistant/index.py ./src/rag_assistant/
+COPY --chown=appuser data/corpus ./data/corpus
 RUN python -m rag_assistant.index
+
+# 3) The rest of the code: changes often, and this layer is small.
+COPY --chown=appuser src ./src
 
 # 4) Ready for read-only disks (AWS Lambda): never try to download the model at run time.
 #    The index is copied to /tmp at start-up if its folder is read-only (see index.py).

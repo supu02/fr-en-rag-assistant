@@ -63,8 +63,12 @@ IAM Identity Center (`aws configure sso`) instead. The rest is the same.
 
 It first checks that the CLI is signed in, that a Region is set and that Docker is running,
 and prints the account and Region it will use. Then it runs `sam build` (builds the Docker
-image on your Mac, about 5–10 minutes the first time) and `sam deploy` (pushes the image to ECR and creates or updates the stack). SAM shows the
-list of changes and asks for confirmation. At the end it prints:
+image on your Mac, about 5–10 minutes the first time, with the fan running: it embeds all 8,652
+chunks; SAM prints nothing while Docker builds) and `sam deploy` (pushes the image to ECR and
+creates or updates the stack). Later builds reuse the index unless the corpus or the files that
+build it (`config.py`, `embeddings.py`, `index.py`) changed. SAM shows the list of changes and asks
+for confirmation. Finally the script calls the new version once and waits for it (see the cold
+starts below). The deploy prints:
 
 - `ApiUrl`: the public URL. Open it in a browser for the demo page.
 - `DashboardUrl`: the CloudWatch dashboard.
@@ -76,10 +80,19 @@ Check it:
 ```
 
 The first request after a quiet period is slower: a *cold start*, where a new Lambda instance
-loads the image, the index and the embedding model. On a laptop this takes 3 seconds. On Lambda,
-the first start after a deployment took about a minute (measured on 19 November 2026): Lambda
-fetches the image's files the first time they are read, and the embedding model is 470 MB.
-The dashboard shows each cold start and how long it took.
+loads the image, the index and the embedding model. On a laptop this takes 3 seconds. Measured on
+19 November 2026:
+
+| Case | Wait |
+|---|---|
+| Request served by a running instance | 1–3 s for `/ask` |
+| Request that needs a new instance (2 cases) | 8.6 s and 10.0 s in total; start-up 3.4 s and 4.3 s |
+| First start after a deployment | 112 s (start-up 86 s, of which 77 s for the embedding model) |
+
+The first start after a deployment is slow because Lambda fetches the new image's files the first
+time they are read, and the embedding model is 470 MB; after that they are cached. The deploy script
+makes this first call itself, so visitors don't wait for it. The dashboard shows each cold start and
+how long it took.
 
 To update after a code change, run `./scripts/deploy_aws.sh` again.
 To remove everything: `sam delete`.
@@ -138,7 +151,8 @@ aws lambda put-function-concurrency --function-name <function name> --reserved-c
 - **403 Forbidden on the URL:** the function needs a resource policy allowing both
   `lambda:InvokeFunctionUrl` and `lambda:InvokeFunction`. SAM normally creates it; check
   Lambda console → Configuration → Permissions. Update the SAM CLI if it is old.
-- **Slow first call:** the first request after a deployment can take about a minute (see
-  [Deploy](#deploy)). The function's timeout is 120 s so that this request still succeeds.
-  Call `/health` and wait for its answer before using the page.
+- **Slow first call:** the first request after a deployment can take about 2 minutes (see
+  [Deploy](#deploy)); the deploy script makes it for you. The function's timeout is 120 s so that
+  this request can still succeed; if it runs out, the next attempt is faster because part of the
+  image is then cached.
 - **Errors in the logs:** CloudWatch → Log groups → `/aws/lambda/fr-en-rag-assistant`.

@@ -146,8 +146,16 @@ flowchart LR
   Infrastructure as code with AWS SAM in [`template.yaml`](template.yaml);
   step-by-step guide in [`docs/DEPLOY_AWS.md`](docs/DEPLOY_AWS.md).
   **Live demo:** https://3iiwsq52ujtjdx5gwubcs2sj6a0lylfs.lambda-url.eu-north-1.on.aws/ (API docs at
-  [`/docs`](https://3iiwsq52ujtjdx5gwubcs2sj6a0lylfs.lambda-url.eu-north-1.on.aws/docs)). After a quiet
-  period the first request can take up to a minute while Lambda starts a new instance.
+  [`/docs`](https://3iiwsq52ujtjdx5gwubcs2sj6a0lylfs.lambda-url.eu-north-1.on.aws/docs)).
+- **Measured live** (19 November 2026, a handful of test requests, so only a first look):
+  - `/ask` took a median of 2.0 s in French (6 requests) and 2.3 s in English (5), counted inside the
+    app. 11 answers used 20,597 input and 1,140 output tokens, about $0.005 at list price.
+  - Cold starts: a request that needs a new Lambda instance waited 8.6 s and 10.0 s in total (2 cases). The
+    first start after a deployment took 112 s, almost all of it reading the 470 MB embedding model
+    from the new image for the first time (3 s on a laptop). The first request timed out at 60 s, so
+    the timeout is now 120 s, and the deploy script now makes that first call itself, so no visitor
+    waits for it.
+  - Peak memory 1,893 MB of the 2,048 MB set (the figure may include cached files): one to watch.
 - **Monitoring:** every `/ask` and `/search` call writes one JSON log line: latency, status and
   error type, language, retrieval method and top score, number of citations, tool calls, LLM
   tokens and estimated cost. The question and the answer are not logged. On AWS, a CloudWatch

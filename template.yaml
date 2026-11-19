@@ -29,9 +29,9 @@ Resources:
       PackageType: Image
       Architectures: [arm64]  # built natively on an Apple Silicon Mac; also ~20% cheaper on Lambda
       MemorySize: 2048  # the embedding model and the index need ~1 GB; more memory also means more CPU
-      # An answer takes 1-3 s, but the first request after a deployment waited about a minute
-      # while Lambda fetched the 470 MB embedding model from the image (3 s on a laptop), and
-      # timed out at 60 s. 120 s lets that request finish instead of failing.
+      # An answer takes 1-3 s, but the first request after a deployment waits while Lambda
+      # fetches the 470 MB embedding model from the new image (3 s on a laptop): it timed out
+      # at 60 s, then took 102 s. 120 s lets it finish; deploy_aws.sh makes that call itself.
       Timeout: 120
       LoggingConfig:
         LogGroup: !Ref ApiLogGroup
