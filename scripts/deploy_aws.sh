@@ -18,6 +18,14 @@ if ! ACCOUNT=$(aws sts get-caller-identity --query Account --output text 2>/dev/
   echo "The AWS CLI is not signed in. Run: aws login"
   exit 1
 fi
+# Docker Desktop installed for one user keeps its command in ~/.docker/bin and its socket
+# in ~/.docker/run. Point DOCKER_HOST at that socket so the SAM CLI finds it too.
+if ! command -v docker >/dev/null 2>&1 && [ -x "$HOME/.docker/bin/docker" ]; then
+  PATH="$HOME/.docker/bin:$PATH"
+fi
+if [ -z "${DOCKER_HOST:-}" ] && [ ! -S /var/run/docker.sock ] && [ -S "$HOME/.docker/run/docker.sock" ]; then
+  export DOCKER_HOST="unix://$HOME/.docker/run/docker.sock"
+fi
 if ! docker info >/dev/null 2>&1; then
   echo "Docker is not running. Start Docker Desktop, then run this script again."
   exit 1
