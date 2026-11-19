@@ -7,6 +7,7 @@
 # Without a key, the deployed API still serves /search; /ask returns 503.
 set -euo pipefail
 cd "$(dirname "$0")/.."
+export SAM_CLI_TELEMETRY=0  # don't send usage statistics to AWS
 
 # Check the three things that usually go wrong before spending 10 minutes on a build.
 REGION=${AWS_REGION:-$(aws configure get region || true)}
