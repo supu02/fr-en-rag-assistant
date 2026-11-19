@@ -1,5 +1,8 @@
 # Settings for `sam build` and `sam deploy` (AWS SAM CLI). No secrets here:
 # the Mistral key is passed by scripts/deploy_aws.sh, read from the local .env file.
+# No Region here either: the deploy script uses the Region of your AWS CLI profile.
+# New AWS accounts ("projects") only allow the Region AWS assigned them (eu-north-1,
+# Stockholm, for a European address); see docs/DEPLOY_AWS.md.
 version = 0.1
 
 [default.global.parameters]
@@ -9,7 +12,6 @@ stack_name = "fr-en-rag-assistant"
 cached = true
 
 [default.deploy.parameters]
-region = "eu-west-3"            # Paris
 capabilities = "CAPABILITY_IAM"  # SAM creates the function's execution role
 resolve_s3 = true                # small bucket SAM uses for deployment files
 resolve_image_repos = true       # ECR repository for the Docker image, created by SAM

@@ -17,23 +17,39 @@ How the image works on Lambda (no change to the FastAPI code):
 
 ## One-time setup (you do this: accounts and credentials are yours)
 
-1. **AWS account.** Create it at [aws.amazon.com/free](https://aws.amazon.com/free). It asks for a card.
-   - Turn on MFA for the root user, then use the root user only for billing.
-   - Billing → Budgets → *Create budget* → **Zero spend budget** (an email as soon as anything costs money).
-2. **A daily-use login.** In *IAM Identity Center*, enable it, create a user for yourself with the
-   `AdministratorAccess` permission set on your account. Note the **AWS access portal URL**.
-3. **Tools on your Mac:**
+This was done with a new AWS account from the current sign-up page, the kind AWS calls a
+**project** (the project's name is shown at the top right of the console).
+Such an account comes ready to use, with two limits that matter here:
+
+- It only works in **the Region AWS assigned it**, chosen from your contact address:
+  `eu-north-1` (Stockholm) for Europe, `us-east-2` for the Americas, `ap-southeast-2` for
+  Asia-Pacific. Other Regions, such as Paris, are blocked. Check yours in
+  [AWS Settings](https://settings.aws.com) → *Project* → *Additional info* → *Region*.
+- IAM Identity Center is not available, and you don't need it: the CLI signs in with your
+  normal console login (`aws login`).
+
+Lambda, ECR, CloudFormation, S3, IAM and CloudWatch, everything this deployment uses, are
+included in the free plan of these accounts
+([list](https://docs.aws.amazon.com/accounts/latest/reference/supported-services-sign-up-new.html)).
+
+1. **Tools on your Mac:**
    ```bash
    brew install awscli aws-sam-cli
    ```
    and [Docker Desktop](https://www.docker.com/products/docker-desktop/) (start it once).
-4. **Sign the CLI in** (opens the browser; choose region `eu-west-3`, profile name `default`):
+   `aws login` needs AWS CLI 2.32 or later (`aws --version`).
+2. **Sign the CLI in.** It opens the browser, where you pick your project. When it asks for a
+   Region, type your project's Region (for example `eu-north-1`):
    ```bash
-   aws configure sso
+   aws login
    ```
-   Later sessions only need `aws sso login`.
-5. **Mistral key** in the local `.env` file (`cp .env.example .env`, then paste the key). Optional:
+   Check it with `aws sts get-caller-identity`: it prints your account number. The sign-in
+   lasts up to 12 hours; after that, run `aws login` again.
+3. **Mistral key** in the local `.env` file (`cp .env.example .env`, then paste the key). Optional:
    without it, the deployed API serves `/search` only and `/ask` returns 503.
+
+With an older ("classic") AWS account, any Region works and you would sign the CLI in with
+IAM Identity Center (`aws configure sso`) instead. The rest is the same.
 
 ## Deploy
 
@@ -41,8 +57,9 @@ How the image works on Lambda (no change to the FastAPI code):
 ./scripts/deploy_aws.sh
 ```
 
-It runs `sam build` (builds the Docker image on your Mac, about 5–10 minutes the first time)
-and `sam deploy` (pushes the image to ECR and creates or updates the stack). SAM shows the
+It first checks that the CLI is signed in, that a Region is set and that Docker is running,
+and prints the account and Region it will use. Then it runs `sam build` (builds the Docker
+image on your Mac, about 5–10 minutes the first time) and `sam deploy` (pushes the image to ECR and creates or updates the stack). SAM shows the
 list of changes and asks for confirmation. At the end it prints:
 
 - `ApiUrl`: the public URL. Open it in a browser for the demo page.
@@ -83,8 +100,11 @@ To read the raw logs from the terminal: `sam logs --stack-name fr-en-rag-assista
 
 At demo traffic this should stay within AWS's always-free allowances (Lambda: 1 million
 requests and 400,000 GB-seconds per month; CloudWatch: 5 GB of logs and 3 dashboards). The
-image in ECR costs about $0.10 per GB per month. The zero-spend budget emails you if anything
-is charged. Mistral's free plan costs nothing; the dashboard's cost column shows what the
+image in ECR costs about $0.10 per GB per month. On the free plan of a new AWS account,
+nothing is charged unless you upgrade to the paid plan; on the paid plan, set a **spend limit**
+in AWS Settings (near the limit, AWS blocks new Lambda calls). With a classic account, create
+a *zero spend budget* in Billing → Budgets to get an email as soon as anything costs money.
+Mistral's free plan costs nothing; the dashboard's cost column shows what the
 same traffic would cost on a paid plan.
 
 The URL is public: anyone who has it can call the API. If it is abused, stop all traffic at
@@ -96,6 +116,14 @@ aws lambda put-function-concurrency --function-name <function name> --reserved-c
 
 ## If something goes wrong
 
+- **"explicit deny in a service control policy"** during the deploy: the CLI points at a Region
+  your project can't use. Set the right one (`aws configure set region eu-north-1`) and deploy
+  again.
+- **"Unable to locate credentials"** or an expired token: run `aws login` again. If the SAM CLI
+  still can't read the login, let the AWS CLI hand it the credentials: add a profile with
+  `credential_process = aws configure export-credentials --profile default --format process` (and your `region`)
+  to `~/.aws/config` and run the script with `AWS_PROFILE` set to it
+  ([details](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-sign-in.html#cli-configure-sign-in-cached-credentials)).
 - **403 Forbidden on the URL:** the function needs a resource policy allowing both
   `lambda:InvokeFunctionUrl` and `lambda:InvokeFunction`. SAM normally creates it; check
   Lambda console → Configuration → Permissions. Update the SAM CLI if it is old.
