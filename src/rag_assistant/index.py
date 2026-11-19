@@ -10,7 +10,11 @@ Run:  python -m rag_assistant.index
 from __future__ import annotations
 
 import json
+import os
+import shutil
+import tempfile
 import time
+from pathlib import Path
 
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, PointStruct, VectorParams
@@ -26,8 +30,31 @@ def load_chunks() -> list[dict]:
         return [json.loads(line) for line in fh]
 
 
+def _copy_writable(src: Path, dst: Path) -> None:
+    """Copy file contents only (not the read-only permissions), then rename at the end,
+    so a copy cut in the middle is never used."""
+    partial = dst.with_name(dst.name + ".partial")
+    shutil.rmtree(partial, ignore_errors=True)
+    for item in src.rglob("*"):
+        target = partial / item.relative_to(src)
+        if item.is_dir():
+            target.mkdir(parents=True, exist_ok=True)
+        else:
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(item, target)
+    partial.rename(dst)
+
+
 def get_client() -> QdrantClient:
-    return QdrantClient(path=str(INDEX_DIR / "qdrant"))
+    path = INDEX_DIR / "qdrant"
+    if path.exists() and not os.access(path, os.W_OK):
+        # Read-only disk (AWS Lambda): Qdrant local mode must write a lock file,
+        # so it opens a copy in the temp folder, the only writable place there (~40 MB).
+        copy = Path(tempfile.gettempdir()) / "qdrant-index"
+        if not copy.exists():
+            _copy_writable(path, copy)
+        path = copy
+    return QdrantClient(path=str(path))
 
 
 def build_index(batch: int = 256) -> None:

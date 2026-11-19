@@ -9,6 +9,7 @@ and documents with "passage: ". Forgetting them lowers retrieval quality.
 
 from __future__ import annotations
 
+import os
 from functools import lru_cache
 
 import numpy as np
@@ -17,7 +18,7 @@ from fastembed.common.model_description import ModelSource, PoolingType
 
 from rag_assistant.config import EMBED_DIM, EMBED_MODEL, ROOT
 
-CACHE_DIR = str(ROOT / ".cache" / "fastembed")
+CACHE_DIR = os.getenv("FASTEMBED_CACHE_DIR", str(ROOT / ".cache" / "fastembed"))
 
 
 def _register_e5_small() -> None:

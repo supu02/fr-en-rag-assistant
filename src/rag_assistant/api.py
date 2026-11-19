@@ -27,6 +27,7 @@ from pydantic import BaseModel, Field
 
 from rag_assistant.agent import build_graph, run
 from rag_assistant.config import ANSWER_MODEL
+from rag_assistant.embeddings import embed_query
 from rag_assistant.lang import detect_language
 from rag_assistant.llm import MissingAPIKey, get_chat_model, has_api_key
 from rag_assistant.monitoring import estimate_cost, log_request
@@ -37,7 +38,8 @@ STATIC = Path(__file__).parent / "static"
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    get_retriever()  # load the index and the embedding model once, at start-up
+    get_retriever()  # load the index once, at start-up
+    embed_query("warm-up")  # load the embedding model now, so the first user does not wait for it
     yield
 
 

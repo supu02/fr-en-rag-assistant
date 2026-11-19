@@ -22,6 +22,8 @@ jobs:
       - run: pytest -q
         env:
           PYTHONPATH: src
+      - name: Check the AWS template
+        run: cfn-lint template.yaml
 
   retrieval-eval:
     name: Retrieval evaluation (regression thresholds)
@@ -56,19 +58,28 @@ jobs:
           path: results/retrieval.json
 
   docker:
-    name: Docker build and smoke test
+    name: Docker build and smoke test (${{ matrix.arch }})
     needs: tests
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - arch: x86_64
+            runner: ubuntu-latest
+          - arch: arm64  # the architecture used on AWS Lambda
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
       - run: docker build -t fr-en-rag-assistant .
       - name: Run the container and call the API
         run: |
           docker run -d -p 8000:8000 --name app fr-en-rag-assistant
-          for i in $(seq 1 60); do curl -sf localhost:8000/health && break; sleep 2; done
-          curl -sf localhost:8000/health
-          curl -sf -X POST localhost:8000/search -H 'Content-Type: application/json' \
-            -d '{"question": "Quel préavis pour quitter un logement meublé ?"}' \
-            | python3 -c "import json,sys; r=json.load(sys.stdin)['results']; assert r; print('top result:', r[0]['page_title'])"
+          ./scripts/smoke_test.sh http://localhost:8000
+      - name: Run it like AWS Lambda does (read-only disk, writable /tmp only, unknown user)
+        run: |
+          docker run -d -p 8001:8000 --name lambda-like --read-only --tmpfs /tmp --user 993:993 fr-en-rag-assistant
+          ./scripts/smoke_test.sh http://localhost:8001
       - if: always()
-        run: docker logs app || true
+        run: |
+          docker logs app || true
+          docker logs lambda-like || true

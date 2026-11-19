@@ -77,6 +77,7 @@ def test_api_search_and_health(monkeypatch):
     fake = FakeRetriever()
     fake.chunks = SOURCES
     monkeypatch.setattr(api, "get_retriever", lambda: fake)
+    monkeypatch.setattr(api, "embed_query", lambda text: None)  # no model download in tests
     monkeypatch.delenv("MISTRAL_API_KEY", raising=False)
     with TestClient(api.app) as client:
         assert client.get("/health").json() == {"status": "ok", "llm_configured": False, "chunks": 2}
@@ -111,6 +112,7 @@ def test_api_writes_one_log_line_per_request(monkeypatch, caplog):
     fake = FakeRetriever()
     fake.chunks = SOURCES
     monkeypatch.setattr(api, "get_retriever", lambda: fake)
+    monkeypatch.setattr(api, "embed_query", lambda text: None)  # no model download in tests
     usage = {"input_tokens": 3000, "output_tokens": 100, "total_tokens": 3100}
     llm = FakeToolLLM(responses=[AIMessage(content="Je ne trouve pas cette information.", usage_metadata=usage)])
     monkeypatch.setattr(api, "get_graph", lambda: build_graph(llm, fake))
@@ -145,6 +147,7 @@ def test_api_logs_failures(monkeypatch, caplog):
     broken = BrokenRetriever()
     broken.chunks = SOURCES
     monkeypatch.setattr(api, "get_retriever", lambda: broken)
+    monkeypatch.setattr(api, "embed_query", lambda text: None)  # no model download in tests
     monkeypatch.delenv("MISTRAL_API_KEY", raising=False)
     with TestClient(api.app, raise_server_exceptions=False) as client:
         assert client.post("/search", json={"question": "préavis"}).status_code == 500

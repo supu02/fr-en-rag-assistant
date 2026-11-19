@@ -1,0 +1,107 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  FR/EN assistant for French renting and work rules. The Docker image runs on AWS Lambda
+  behind a public function URL; request logs go to CloudWatch, with a dashboard.
+  Deploy with ./scripts/deploy_aws.sh (see docs/DEPLOY_AWS.md).
+
+Parameters:
+  MistralApiKey:
+    Type: String
+    NoEcho: true  # hidden in the console and in CloudFormation outputs
+    Default: ""
+    Description: Mistral API key for /ask. Leave empty to run search only (/ask then returns 503).
+
+Resources:
+  ApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}
+      RetentionInDays: 30  # old logs are deleted, so storage stays free
+
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+      Architectures: [arm64]  # built natively on an Apple Silicon Mac; also ~20% cheaper on Lambda
+      MemorySize: 2048  # the embedding model and the index need ~1 GB; more memory also means more CPU
+      Timeout: 60  # an answer can need 3 LLM calls (translate, answer, date tool)
+      LoggingConfig:
+        LogGroup: !Ref ApiLogGroup
+      Environment:
+        Variables:
+          MISTRAL_API_KEY: !Ref MistralApiKey
+      FunctionUrlConfig:
+        AuthType: NONE  # public demo URL; see docs/DEPLOY_AWS.md for the cost guard
+    Metadata:
+      DockerContext: .
+      Dockerfile: Dockerfile
+      DockerTag: latest
+
+  Dashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: !Sub ${AWS::StackName}
+      # Logs Insights widgets read the JSON line the app writes for each request
+      # (src/rag_assistant/monitoring.py). Lambda's own metrics come for free.
+      DashboardBody: !Sub
+        - |
+          {
+            "widgets": [
+              {"type": "text", "x": 0, "y": 0, "width": 24, "height": 2, "properties": {"markdown":
+                "## FR/EN assistant: live requests\nOne log line per /ask and /search call. No question or answer text is stored. Answer quality is measured offline (see the README); these are warning signs."}},
+
+              {"type": "log", "x": 0, "y": 2, "width": 12, "height": 6, "properties": {
+                "title": "Requests per hour, by endpoint", "region": "${AWS::Region}", "view": "timeSeries", "stacked": true,
+                "query": "SOURCE '${LogGroup}' | filter event = 'request' | stats count(*) as requests by endpoint, bin(1h)"}},
+
+              {"type": "log", "x": 12, "y": 2, "width": 12, "height": 6, "properties": {
+                "title": "Latency (ms) of successful requests: median and 95th percentile", "region": "${AWS::Region}", "view": "table",
+                "query": "SOURCE '${LogGroup}' | filter event = 'request' and status = 200 | stats count(*) as requests, pct(latency_ms, 50) as p50_ms, pct(latency_ms, 95) as p95_ms by endpoint, lang"}},
+
+              {"type": "log", "x": 0, "y": 8, "width": 12, "height": 6, "properties": {
+                "title": "Failed requests (status >= 500) and missing key (503)", "region": "${AWS::Region}", "view": "table",
+                "query": "SOURCE '${LogGroup}' | filter event = 'request' and status >= 500 | stats count(*) as requests by endpoint, status, error"}},
+
+              {"type": "log", "x": 12, "y": 8, "width": 12, "height": 6, "properties": {
+                "title": "/ask answers with and without a citation, by language", "region": "${AWS::Region}", "view": "table",
+                "query": "SOURCE '${LogGroup}' | filter endpoint = '/ask' and status = 200 | stats count(*) as answers, avg(n_citations) as avg_citations, avg(tool_calls) as avg_tool_calls by lang, no_citation"}},
+
+              {"type": "log", "x": 0, "y": 14, "width": 12, "height": 6, "properties": {
+                "title": "Tokens and estimated cost per day (list prices; free plan = $0)", "region": "${AWS::Region}", "view": "table",
+                "query": "SOURCE '${LogGroup}' | filter endpoint = '/ask' and status = 200 | stats count(*) as answers, sum(input_tokens) as input_tokens, sum(output_tokens) as output_tokens, sum(est_cost_usd) as est_cost_usd by bin(1d)"}},
+
+              {"type": "log", "x": 12, "y": 14, "width": 12, "height": 6, "properties": {
+                "title": "Retrieval: top score by method (hybrid = RRF scale, dense = cosine)", "region": "${AWS::Region}", "view": "table",
+                "query": "SOURCE '${LogGroup}' | filter event = 'request' and status = 200 | stats count(*) as requests, avg(top_score) as avg_top_score, min(top_score) as min_top_score, avg(n_pages) as avg_distinct_pages by endpoint, retrieval_method"}},
+
+              {"type": "log", "x": 0, "y": 20, "width": 12, "height": 6, "properties": {
+                "title": "Cold starts (a new Lambda instance had to load the model)", "region": "${AWS::Region}", "view": "table",
+                "query": "SOURCE '${LogGroup}' | filter @type = 'REPORT' | stats count(*) as invocations, count(@initDuration) as cold_starts, avg(@initDuration) as avg_init_ms, max(@duration) as max_duration_ms by bin(1d)"}},
+
+              {"type": "metric", "x": 12, "y": 20, "width": 12, "height": 6, "properties": {
+                "title": "Lambda: invocations, errors, throttles", "region": "${AWS::Region}", "view": "timeSeries", "stat": "Sum", "period": 3600,
+                "metrics": [
+                  ["AWS/Lambda", "Invocations", "FunctionName", "${Function}"],
+                  [".", "Errors", ".", "."],
+                  [".", "Throttles", ".", "."]
+                ]}},
+
+              {"type": "log", "x": 0, "y": 26, "width": 24, "height": 6, "properties": {
+                "title": "Last 20 requests", "region": "${AWS::Region}", "view": "table",
+                "query": "SOURCE '${LogGroup}' | filter event = 'request' | fields @timestamp, endpoint, status, lang, latency_ms, retrieval_method, n_citations, tool_calls, input_tokens, output_tokens, error | sort @timestamp desc | limit 20"}}
+            ]
+          }
+        - LogGroup: !Ref ApiLogGroup
+          Function: !Ref ApiFunction
+
+Outputs:
+  ApiUrl:
+    Description: Public URL of the API (open it in a browser for the demo page)
+    Value: !GetAtt ApiFunctionUrl.FunctionUrl
+  DashboardUrl:
+    Description: CloudWatch dashboard with the request logs
+    Value: !Sub https://${AWS::Region}.console.aws.amazon.com/cloudwatch/home?region=${AWS::Region}#dashboards/dashboard/${Dashboard}
+  LogGroup:
+    Description: Where the request logs are
+    Value: !Ref ApiLogGroup

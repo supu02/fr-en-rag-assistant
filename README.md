@@ -106,6 +106,21 @@ flowchart LR
 - **Scope and freshness.** 362 pages, one snapshot (18 November 2026). Rules change; the live pages are the reference.
 - **Date tool.** Calendar dates only: it does not apply legal extension rules (for example, a deadline that ends on a Sunday or public holiday), but it reports the weekday.
 
+## Deployment and monitoring
+
+- **Deployment:** the Docker image runs on **AWS Lambda** behind a public function URL
+  (scales to zero when unused). Infrastructure as code with AWS SAM in [`template.yaml`](template.yaml);
+  step-by-step guide in [`docs/DEPLOY_AWS.md`](docs/DEPLOY_AWS.md). *Not deployed yet: the public URL
+  will be added here once it is live.*
+- **Monitoring:** every `/ask` and `/search` call writes one JSON log line: latency, status and
+  error type, language, retrieval method and top score, number of citations, tool calls, LLM
+  tokens and estimated cost. The question and the answer are not logged. On AWS, a CloudWatch
+  dashboard (defined in the same template) shows requests, latency percentiles, failures, answers
+  without citations, tokens, cost and cold starts.
+- **CI** (GitHub Actions): lint, unit tests and a template check; the retrieval evaluation with
+  minimum scores; the Docker image built and called on x86_64 and arm64, once normally and once
+  the way Lambda runs it (read-only disk, unknown user).
+
 ## How to run it
 
 Requirements: Python 3.12, and a [Mistral API key](https://console.mistral.ai) for `/ask` and the answer evaluation.
@@ -123,6 +138,7 @@ With Docker (the index is built inside the image):
 ```bash
 docker build -t fr-en-rag-assistant .
 docker run -p 8000:8000 --env-file .env fr-en-rag-assistant
+./scripts/smoke_test.sh http://localhost:8000   # checks /health and a French and an English search
 ```
 
 Tests and evaluation:
