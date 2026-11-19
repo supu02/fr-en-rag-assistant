@@ -92,7 +92,7 @@ flowchart LR
 
 - **Questions** ([`questions.jsonl`](evaluation/questions.jsonl)): 50 topics, each asked in French and in English (100 questions). 37 topics are factual questions, 8 need date arithmetic, and 5 are outside the corpus (the right answer is "I can't find this in my sources"). Each question has one or more gold pages and a short reference answer.
 - **Retrieval** (no LLM, runs in CI): hit@1/3/5 and MRR@10. A hit means a gold page is among the results.
-- **Answers** (Mistral models on Amazon Bedrock): an LLM judge (Pixtral Large, a larger model than the answering model) grades each answer against the reference (correct / partial / incorrect) and checks that every claim is supported by the cited sources (faithfulness). Simple code checks: does the answer cite a gold page, is it written in the question's language, was the date tool called, did the assistant decline out-of-scope questions.
+- **Answers** (Mistral models on Amazon Bedrock): an LLM judge (Mistral Large 3, a much larger model than the answering model) grades each answer against the reference (correct / partial / incorrect) and checks that every claim is supported by the cited sources (faithfulness). Simple code checks: does the answer cite a gold page, is it written in the question's language, was the date tool called, did the assistant decline out-of-scope questions.
 - **Robustness**: typos, removed accents, extra spaces, lowercase, rewording ([`paraphrases.jsonl`](evaluation/paraphrases.jsonl)), and prompt injection hidden in the question (an "ignore previous instructions" line or a fake `[SYSTEM]` rule asking for a code word). Every change is deterministic, so runs can be compared.
 - **CI regression check**: retrieval metrics must stay above [`thresholds.json`](evaluation/thresholds.json) on every push.
 
@@ -102,7 +102,7 @@ flowchart LR
 - **The questions were drafted with an AI assistant** from the source pages, and the facts were checked against the page text. They are not real user questions.
 - **Choices were made on the test questions.** There is no separate development set: the retrieval method `auto` was chosen after looking at these results, so its scores are optimistic. The paraphrase set is a partial check.
 - **Gold pages are a lower bound.** Another page may also contain the answer (for example, a public-sector page with the same rule).
-- **LLM judge.** The judge and the answering model come from the same company. The judge's grades should be checked against human labels ([`judge_agreement.py`](evaluation/judge_agreement.py)).
+- **LLM judge.** The judge and the answering model come from the same company. The judge runs on Bedrock in US East (the only Region offering it); it only sees the public test questions and page excerpts. The judge's grades should be checked against human labels ([`judge_agreement.py`](evaluation/judge_agreement.py)).
 - **Scope and freshness.** 362 pages, one snapshot (18 November 2026). Rules change; the live pages are the reference.
 - **Date tool.** Calendar dates only: it does not apply legal extension rules (for example, a deadline that ends on a Sunday or public holiday), but it reports the weekday.
 

@@ -179,6 +179,8 @@ def test_bedrock_model_settings(monkeypatch):
         assert isinstance(model, ChatBedrockConverse)
         assert model.region_name == config.BEDROCK_REGION and model.temperature == 0.0
         assert model.max_tokens == 1024
+        judge = llm.get_judge_model()
+        assert judge.model_id == config.JUDGE_MODEL and judge.region_name == config.BEDROCK_JUDGE_REGION
     finally:
         llm.get_chat_model.cache_clear()
 

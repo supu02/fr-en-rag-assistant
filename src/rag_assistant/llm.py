@@ -47,7 +47,8 @@ def llm_configured() -> bool:
 
 
 @lru_cache(maxsize=4)
-def get_chat_model(model: str = config.ANSWER_MODEL):
+def get_chat_model(model: str = config.ANSWER_MODEL, region: str | None = None):
+    """region: Bedrock Region for this model (default BEDROCK_REGION); ignored by the Mistral API."""
     if not llm_configured():
         hint = ("set MISTRAL_API_KEY in .env" if config.LLM_PROVIDER == "mistral"
                 else "sign in with `aws login`, or set LLM_PROVIDER=mistral")
@@ -71,9 +72,14 @@ def get_chat_model(model: str = config.ANSWER_MODEL):
     return ChatBedrockConverse(  # Bedrock's Converse API: one format for every model, with tools
         model_id=model,
         provider="mistral",
-        region_name=config.BEDROCK_REGION,
+        region_name=region or config.BEDROCK_REGION,
         temperature=0.0,
         max_tokens=1024,  # answers are a few sentences; this caps the cost of a runaway reply
         config=Config(retries={"max_attempts": 6, "mode": "adaptive"}, read_timeout=60),
         rate_limiter=RATE_LIMITER,
     )
+
+
+def get_judge_model():
+    """The grader used by the evaluation (on Bedrock: Mistral Large 3, served in us-east-1)."""
+    return get_chat_model(config.JUDGE_MODEL, config.BEDROCK_JUDGE_REGION)
