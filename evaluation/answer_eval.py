@@ -1,4 +1,4 @@
-"""Answer-level evaluation and robustness suite (uses the Mistral API).
+"""Answer-level evaluation and robustness suite (calls the LLM: Mistral models on Bedrock by default).
 
 For every question variant it runs the full assistant, saves the raw output,
 asks the judge for a grade, then writes a summary to results/answer_eval.json.

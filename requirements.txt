@@ -6,6 +6,7 @@ python-dotenv==1.2.4
 langgraph==1.2.22
 langchain-core==1.8.2
 langchain-mistralai==1.2.0
+langchain-aws==1.9.3  # Mistral models on Amazon Bedrock (pulls in boto3)
 fastapi==0.164.0
 uvicorn[standard]==0.54.0
 pydantic==2.14.3

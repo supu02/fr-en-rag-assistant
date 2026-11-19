@@ -69,6 +69,14 @@ def test_french_question_is_not_translated_and_bad_citations_are_ignored():
     assert [c["n"] for c in result["citations"]] == [1]  # [7] does not exist, so it is dropped
 
 
+def _no_llm(monkeypatch):
+    """Act as if no LLM credentials exist (no Mistral key, no AWS sign-in)."""
+    from rag_assistant import api, llm
+
+    monkeypatch.setattr(llm, "llm_configured", lambda: False)
+    monkeypatch.setattr(api, "llm_configured", lambda: False)
+
+
 def test_api_search_and_health(monkeypatch):
     from fastapi.testclient import TestClient
 
@@ -78,7 +86,7 @@ def test_api_search_and_health(monkeypatch):
     fake.chunks = SOURCES
     monkeypatch.setattr(api, "get_retriever", lambda: fake)
     monkeypatch.setattr(api, "embed_query", lambda text: None)  # no model download in tests
-    monkeypatch.delenv("MISTRAL_API_KEY", raising=False)
+    _no_llm(monkeypatch)
     with TestClient(api.app) as client:
         assert client.get("/health").json() == {"status": "ok", "llm_configured": False, "chunks": 2}
         r = client.post("/search", json={"question": "préavis meublé", "k": 1})
@@ -148,10 +156,39 @@ def test_api_logs_failures(monkeypatch, caplog):
     broken.chunks = SOURCES
     monkeypatch.setattr(api, "get_retriever", lambda: broken)
     monkeypatch.setattr(api, "embed_query", lambda text: None)  # no model download in tests
-    monkeypatch.delenv("MISTRAL_API_KEY", raising=False)
+    _no_llm(monkeypatch)
     with TestClient(api.app, raise_server_exceptions=False) as client:
         assert client.post("/search", json={"question": "préavis"}).status_code == 500
         assert client.post("/ask", json={"question": "no key configured"}).status_code == 503
     crash, no_key = _request_logs(caplog)
     assert crash["status"] == 500 and crash["error"] == "RuntimeError"
-    assert no_key["status"] == 503 and no_key["error"] == "MissingAPIKey"
+    assert no_key["status"] == 503 and no_key["error"] == "LLMNotConfigured"
+
+
+def test_bedrock_model_settings(monkeypatch):
+    """The default provider builds a Bedrock Converse model, deterministic and capped."""
+    from langchain_aws import ChatBedrockConverse
+
+    from rag_assistant import config, llm
+
+    monkeypatch.setattr(config, "LLM_PROVIDER", "bedrock")
+    monkeypatch.setattr(llm, "llm_configured", lambda: True)
+    llm.get_chat_model.cache_clear()
+    try:
+        model = llm.get_chat_model("mistral.ministral-3-14b-instruct")
+        assert isinstance(model, ChatBedrockConverse)
+        assert model.region_name == config.BEDROCK_REGION and model.temperature == 0.0
+        assert model.max_tokens == 1024
+    finally:
+        llm.get_chat_model.cache_clear()
+
+
+def test_missing_credentials_raise_a_clear_error(monkeypatch):
+    import pytest
+
+    from rag_assistant import llm
+
+    monkeypatch.setattr(llm, "llm_configured", lambda: False)
+    llm.get_chat_model.cache_clear()
+    with pytest.raises(llm.LLMNotConfigured, match="aws login|MISTRAL_API_KEY"):
+        llm.get_chat_model()

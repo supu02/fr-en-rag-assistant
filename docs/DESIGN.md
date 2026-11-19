@@ -46,9 +46,10 @@ Numbers come from `results/`; see the README for the full tables.
 
 ## Serving and deployment
 
-- **FastAPI**: `/search` works without an API key (useful for a public demo and for CI smoke tests); `/ask` returns 503 if the key is missing.
-- **The index is built inside the Docker image**, so the container starts fast and search needs no network. Only `/ask` calls the Mistral API.
-- **Secrets** come from environment variables (`.env` locally, platform secrets in the cloud); `.env` is in both `.gitignore` and `.dockerignore`.
+- **FastAPI**: `/search` works without the LLM (useful for CI smoke tests); `/ask` returns 503 if the LLM has no credentials.
+- **The index is built inside the Docker image**, so the container starts fast and search needs no network. Only `/ask` calls the LLM.
+- **LLM provider: Amazon Bedrock by default.** The same Mistral models run there (Ministral 3 14B answers, Pixtral Large judges), billed to the AWS account, and the Lambda function calls them with its IAM role: no API key to store or rotate. Mistral's own API stays available (`LLM_PROVIDER=mistral`); its free plan no longer includes API access (November 2026). Bedrock serves these models in Ireland, so the function in Stockholm makes a cross-Region call.
+- **Secrets** (only the Mistral key, if that provider is used) come from environment variables (`.env` locally); `.env` is in both `.gitignore` and `.dockerignore`.
 
 ## Monitoring
 

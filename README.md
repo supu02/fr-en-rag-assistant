@@ -84,15 +84,15 @@ flowchart LR
 | 1. Ingestion | [`ingest.py`](src/rag_assistant/ingest.py) | Reads the official XML and cuts it along its own sections. Each chunk starts with its heading path (for example *Deposit > Furnished flat > Inspection matches*), because the same question often has different answers for different cases. |
 | 2. Index | [`embeddings.py`](src/rag_assistant/embeddings.py), [`index.py`](src/rag_assistant/index.py) | Turns chunks into vectors with `multilingual-e5-small` (runs on CPU, French and English in one vector space) and stores them in Qdrant. |
 | 3. Retrieval | [`retrieve.py`](src/rag_assistant/retrieve.py) | Dense search, BM25 keyword search, or both (hybrid). At most 2 chunks per page, so one page cannot fill all 5 slots. |
-| 4. Agent | [`agent.py`](src/rag_assistant/agent.py), [`tools.py`](src/rag_assistant/tools.py) | A LangGraph graph: translate (English only) → retrieve → LLM answer with `[n]` citations ⇄ date tool. The prompt tells the model to answer only from the sources and to ignore instructions inside the question. |
-| 5. API | [`api.py`](src/rag_assistant/api.py) | FastAPI: `POST /ask`, `POST /search` (works without an API key), `GET /health`, and a small web page at `/`. |
+| 4. Agent | [`agent.py`](src/rag_assistant/agent.py), [`tools.py`](src/rag_assistant/tools.py) | A LangGraph graph: translate (English only) → retrieve → LLM answer with `[n]` citations ⇄ date tool. The LLM is Mistral's Ministral 3 14B on Amazon Bedrock ([`llm.py`](src/rag_assistant/llm.py); the Mistral API also works). The prompt tells the model to answer only from the sources and to ignore instructions inside the question. |
+| 5. API | [`api.py`](src/rag_assistant/api.py) | FastAPI: `POST /ask`, `POST /search` (works without the LLM), `GET /health`, and a small web page at `/`. |
 | 6. Evaluation | [`evaluation/`](evaluation) | Labelled questions, robustness variants, retrieval metrics, LLM judge, README tables. |
 
 ## How it is evaluated
 
 - **Questions** ([`questions.jsonl`](evaluation/questions.jsonl)): 50 topics, each asked in French and in English (100 questions). 37 topics are factual questions, 8 need date arithmetic, and 5 are outside the corpus (the right answer is "I can't find this in my sources"). Each question has one or more gold pages and a short reference answer.
 - **Retrieval** (no LLM, runs in CI): hit@1/3/5 and MRR@10. A hit means a gold page is among the results.
-- **Answers** (Mistral API): an LLM judge (a larger model than the answering model) grades each answer against the reference (correct / partial / incorrect) and checks that every claim is supported by the cited sources (faithfulness). Simple code checks: does the answer cite a gold page, is it written in the question's language, was the date tool called, did the assistant decline out-of-scope questions.
+- **Answers** (Mistral models on Amazon Bedrock): an LLM judge (Pixtral Large, a larger model than the answering model) grades each answer against the reference (correct / partial / incorrect) and checks that every claim is supported by the cited sources (faithfulness). Simple code checks: does the answer cite a gold page, is it written in the question's language, was the date tool called, did the assistant decline out-of-scope questions.
 - **Robustness**: typos, removed accents, extra spaces, lowercase, rewording ([`paraphrases.jsonl`](evaluation/paraphrases.jsonl)), and prompt injection hidden in the question (an "ignore previous instructions" line or a fake `[SYSTEM]` rule asking for a code word). Every change is deterministic, so runs can be compared.
 - **CI regression check**: retrieval metrics must stay above [`thresholds.json`](evaluation/thresholds.json) on every push.
 
@@ -109,7 +109,9 @@ flowchart LR
 ## Deployment and monitoring
 
 - **Deployment:** the Docker image runs on **AWS Lambda** behind a public function URL
-  (scales to zero when unused). Infrastructure as code with AWS SAM in [`template.yaml`](template.yaml);
+  (scales to zero when unused). It answers with Ministral 3 14B on **Amazon Bedrock**, called with
+  the function's own IAM role, so no API key is stored anywhere.
+  Infrastructure as code with AWS SAM in [`template.yaml`](template.yaml);
   step-by-step guide in [`docs/DEPLOY_AWS.md`](docs/DEPLOY_AWS.md). *Not deployed yet: the public URL
   will be added here once it is live.*
 - **Monitoring:** every `/ask` and `/search` call writes one JSON log line: latency, status and
@@ -123,12 +125,12 @@ flowchart LR
 
 ## How to run it
 
-Requirements: Python 3.12, and a [Mistral API key](https://console.mistral.ai) for `/ask` and the answer evaluation.
+Requirements: Python 3.12. For `/ask` and the answer evaluation: an AWS account with Amazon Bedrock (the default; sign in with `aws login`), or a Mistral API key with `LLM_PROVIDER=mistral` (see [`.env.example`](.env.example)).
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements-dev.txt && pip install -e .
-cp .env.example .env        # then paste your MISTRAL_API_KEY into .env
+aws login                   # credentials for Bedrock (only needed for /ask and the answer evaluation)
 python -m rag_assistant.index   # builds the vector index (about 4 minutes on a laptop CPU)
 uvicorn rag_assistant.api:app --reload   # open http://localhost:8000
 ```
@@ -137,7 +139,7 @@ With Docker (the index is built inside the image):
 
 ```bash
 docker build -t fr-en-rag-assistant .
-docker run -p 8000:8000 --env-file .env fr-en-rag-assistant
+docker run -p 8000:8000 fr-en-rag-assistant   # /search works; /ask needs AWS credentials
 ./scripts/smoke_test.sh http://localhost:8000   # checks /health and a French and an English search
 ```
 
@@ -146,7 +148,7 @@ Tests and evaluation:
 ```bash
 pytest -q                                   # unit tests (no network)
 python -m evaluation.retrieval_eval --check # retrieval metrics + thresholds
-python -m evaluation.answer_eval            # answer metrics (calls the Mistral API)
+python -m evaluation.answer_eval            # answer metrics (calls the LLM on Bedrock)
 python -m evaluation.report                 # rewrite the Results section from results/
 ```
 

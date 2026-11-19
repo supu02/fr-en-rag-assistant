@@ -22,8 +22,21 @@ RESULTS_DIR = ROOT / "results"
 EMBED_MODEL = os.getenv("EMBED_MODEL", "intfloat/multilingual-e5-small")
 EMBED_DIM = 384
 
-# LLMs (Mistral API). The judge is a larger model than the answering model.
-ANSWER_MODEL = os.getenv("ANSWER_MODEL", "mistral-small-latest")
-JUDGE_MODEL = os.getenv("JUDGE_MODEL", "mistral-large-latest")
+# LLMs: Mistral models, run by one of two providers (LLM_PROVIDER):
+# - "bedrock" (default): Amazon Bedrock, billed to the AWS account, no API key. Locally the
+#   credentials come from `aws login`; on Lambda from the function's IAM role.
+#   Bedrock serves these models in Ireland (eu-west-1); the app itself can run anywhere.
+# - "mistral": the Mistral API (needs MISTRAL_API_KEY on a plan that includes API access).
+# The judge is a larger model than the answering model.
+LLM_PROVIDER = os.getenv("LLM_PROVIDER", "bedrock").lower()
+DEFAULT_MODELS = {  # provider: (answer model, judge model)
+    "bedrock": ("mistral.ministral-3-14b-instruct", "eu.mistral.pixtral-large-2502-v1:0"),
+    "mistral": ("mistral-small-latest", "mistral-large-latest"),
+}
+if LLM_PROVIDER not in DEFAULT_MODELS:
+    raise ValueError(f"LLM_PROVIDER must be one of {sorted(DEFAULT_MODELS)}, not {LLM_PROVIDER!r}")
+ANSWER_MODEL = os.getenv("ANSWER_MODEL", DEFAULT_MODELS[LLM_PROVIDER][0])
+JUDGE_MODEL = os.getenv("JUDGE_MODEL", DEFAULT_MODELS[LLM_PROVIDER][1])
+BEDROCK_REGION = os.getenv("BEDROCK_REGION", "eu-west-1")
 
 TOP_K = int(os.getenv("TOP_K", "5"))

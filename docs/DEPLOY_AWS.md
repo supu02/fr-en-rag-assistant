@@ -6,7 +6,7 @@ Everything is described in [`template.yaml`](../template.yaml) (AWS SAM):
 
 | Resource | What it is |
 |---|---|
-| `ApiFunction` | The Docker image on Lambda (arm64, 2 GB memory, 60 s timeout) with a public URL |
+| `ApiFunction` | The Docker image on Lambda (arm64, 2 GB memory, 60 s timeout) with a public URL. Its IAM role may call one Bedrock model: Ministral 3 14B in Ireland |
 | `ApiLogGroup` | CloudWatch log group for the request logs, kept 30 days |
 | `Dashboard` | CloudWatch dashboard built from the request logs (see [Monitoring](#monitoring)) |
 
@@ -45,8 +45,12 @@ included in the free plan of these accounts
    ```
    Check it with `aws sts get-caller-identity`: it prints your account number. The sign-in
    lasts up to 12 hours; after that, run `aws login` again.
-3. **Mistral key** in the local `.env` file (`cp .env.example .env`, then paste the key). Optional:
-   without it, the deployed API serves `/search` only and `/ask` returns 503.
+
+No API key is needed: `/ask` uses Ministral 3 14B (by Mistral AI) on **Amazon Bedrock**, and
+the function calls it with its own IAM role. A new account can call Bedrock once AWS has
+verified it, usually within two hours of sign-up. Bedrock is also included in these accounts'
+free plan. The first call to a third-party model accepts its terms of use for the account
+([AWS third-party model terms](https://aws.amazon.com/legal/bedrock/third-party-models/)).
 
 With an older ("classic") AWS account, any Region works and you would sign the CLI in with
 IAM Identity Center (`aws configure sso`) instead. The rest is the same.
@@ -104,8 +108,9 @@ image in ECR costs about $0.10 per GB per month. On the free plan of a new AWS a
 nothing is charged unless you upgrade to the paid plan; on the paid plan, set a **spend limit**
 in AWS Settings (near the limit, AWS blocks new Lambda calls). With a classic account, create
 a *zero spend budget* in Billing → Budgets to get an email as soon as anything costs money.
-Mistral's free plan costs nothing; the dashboard's cost column shows what the
-same traffic would cost on a paid plan.
+The model costs $0.24 per million tokens in and out (Ministral 3 14B, Ireland, November 2026);
+an `/ask` call of about 3,000 tokens costs under $0.001. The dashboard's cost column
+shows this estimate per day.
 
 The URL is public: anyone who has it can call the API. If it is abused, stop all traffic at
 once with
@@ -116,6 +121,8 @@ aws lambda put-function-concurrency --function-name <function name> --reserved-c
 
 ## If something goes wrong
 
+- **"Your account is currently being verified"** from Bedrock: new accounts wait up to about two
+  hours after sign-up. `/ask` returns errors until then; `/search` works.
 - **"explicit deny in a service control policy"** during the deploy: the CLI points at a Region
   your project can't use. Set the right one (`aws configure set region eu-north-1`) and deploy
   again.

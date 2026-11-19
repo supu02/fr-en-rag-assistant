@@ -2,15 +2,19 @@ AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: >
   FR/EN assistant for French renting and work rules. The Docker image runs on AWS Lambda
-  behind a public function URL; request logs go to CloudWatch, with a dashboard.
+  behind a public function URL and answers with a Mistral model on Amazon Bedrock; request
+  logs go to CloudWatch, with a dashboard.
   Deploy with ./scripts/deploy_aws.sh (see docs/DEPLOY_AWS.md).
 
 Parameters:
-  MistralApiKey:
+  AnswerModel:
     Type: String
-    NoEcho: true  # hidden in the console and in CloudFormation outputs
-    Default: ""
-    Description: Mistral API key for /ask. Leave empty to run search only (/ask then returns 503).
+    Default: mistral.ministral-3-14b-instruct
+    Description: Bedrock model that writes the answers (Ministral 3 14B, by Mistral AI).
+  BedrockRegion:
+    Type: String
+    Default: eu-west-1
+    Description: Region where Bedrock serves the model (Ireland); the function can run elsewhere.
 
 Resources:
   ApiLogGroup:
@@ -30,7 +34,18 @@ Resources:
         LogGroup: !Ref ApiLogGroup
       Environment:
         Variables:
-          MISTRAL_API_KEY: !Ref MistralApiKey
+          LLM_PROVIDER: bedrock
+          ANSWER_MODEL: !Ref AnswerModel
+          BEDROCK_REGION: !Ref BedrockRegion
+      # No API key: the function calls Bedrock with its own IAM role, allowed this one model only.
+      Policies:
+        - Statement:
+            - Sid: CallTheAnswerModel
+              Effect: Allow
+              Action:  # the Converse API is authorised as InvokeModel
+                - bedrock:InvokeModel
+                - bedrock:InvokeModelWithResponseStream
+              Resource: !Sub arn:${AWS::Partition}:bedrock:${BedrockRegion}::foundation-model/${AnswerModel}
       FunctionUrlConfig:
         AuthType: NONE  # public demo URL; see docs/DEPLOY_AWS.md for the cost guard
     Metadata:
@@ -60,7 +75,7 @@ Resources:
                 "query": "SOURCE '${LogGroup}' | filter event = 'request' and status = 200 | stats count(*) as requests, pct(latency_ms, 50) as p50_ms, pct(latency_ms, 95) as p95_ms by endpoint, lang"}},
 
               {"type": "log", "x": 0, "y": 8, "width": 12, "height": 6, "properties": {
-                "title": "Failed requests (status >= 500) and missing key (503)", "region": "${AWS::Region}", "view": "table",
+                "title": "Failed requests (status >= 500; 503 = LLM not configured)", "region": "${AWS::Region}", "view": "table",
                 "query": "SOURCE '${LogGroup}' | filter event = 'request' and status >= 500 | stats count(*) as requests by endpoint, status, error"}},
 
               {"type": "log", "x": 12, "y": 8, "width": 12, "height": 6, "properties": {
@@ -68,7 +83,7 @@ Resources:
                 "query": "SOURCE '${LogGroup}' | filter endpoint = '/ask' and status = 200 | stats count(*) as answers, avg(n_citations) as avg_citations, avg(tool_calls) as avg_tool_calls by lang, no_citation"}},
 
               {"type": "log", "x": 0, "y": 14, "width": 12, "height": 6, "properties": {
-                "title": "Tokens and estimated cost per day (list prices; free plan = $0)", "region": "${AWS::Region}", "view": "table",
+                "title": "Tokens and estimated cost per day (Bedrock list prices, paid from AWS credits first)", "region": "${AWS::Region}", "view": "table",
                 "query": "SOURCE '${LogGroup}' | filter endpoint = '/ask' and status = 200 | stats count(*) as answers, sum(input_tokens) as input_tokens, sum(output_tokens) as output_tokens, sum(est_cost_usd) as est_cost_usd by bin(1d)"}},
 
               {"type": "log", "x": 12, "y": 14, "width": 12, "height": 6, "properties": {

@@ -36,9 +36,11 @@ from langchain_core.callbacks import BaseCallbackHandler
 from rag_assistant.config import ANSWER_MODEL
 
 # Estimated list prices in US dollars per million tokens. They change: check
-# https://mistral.ai/pricing and override with the environment variables below.
-# Mistral Small: third-party price lists, Sept 2026 (not shown on Mistral's own page).
+# https://aws.amazon.com/bedrock/pricing and https://mistral.ai/pricing, and override
+# with the environment variables below.
 PRICES_PER_M = {
+    "mistral.ministral-3-14b-instruct": (0.24, 0.24),  # Bedrock, Europe (Ireland), Nov 2026
+    # Mistral Small: third-party price lists, Sept 2026 (not shown on Mistral's own page).
     "mistral-small-latest": (0.15, 0.60),
     "mistral-large-latest": (0.50, 1.50),  # mistral.ai/pricing, Nov 2026
 }
@@ -86,8 +88,8 @@ class TokenCounter(BaseCallbackHandler):
 
 
 def estimate_cost(input_tokens: int, output_tokens: int, model: str = ANSWER_MODEL) -> float | None:
-    """Cost at list prices. On Mistral's free plan the real cost is 0; this shows what
-    the same traffic would cost on a paid plan. None if the model's price is unknown."""
+    """Cost at list prices (on Bedrock, AWS takes it from the account's credits first).
+    None if the model's price is unknown."""
     env_in, env_out = os.getenv("PRICE_INPUT_PER_M"), os.getenv("PRICE_OUTPUT_PER_M")
     default = PRICES_PER_M.get(model)
     if default is None and not (env_in and env_out):

@@ -3,8 +3,8 @@
 #
 # Needs: Docker Desktop running, the AWS CLI signed in (`aws login`), the SAM CLI.
 # Deploys to the Region of your AWS CLI profile (`aws configure get region`).
-# The Mistral key is read from .env: never typed on the command line, never committed.
-# Without a key, the deployed API still serves /search; /ask returns 503.
+# No API key: the function answers with a Mistral model on Amazon Bedrock, using its own
+# IAM role (see template.yaml).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 export SAM_CLI_TELEMETRY=0  # don't send usage statistics to AWS
@@ -33,13 +33,5 @@ if ! docker info >/dev/null 2>&1; then
 fi
 echo "Deploying to AWS account ${ACCOUNT}, Region ${REGION}."
 
-KEY=""
-if [ -f .env ]; then
-  KEY=$(grep -E '^MISTRAL_API_KEY=' .env | head -n 1 | cut -d= -f2- | tr -d "\"'" || true)
-fi
-if [ -z "$KEY" ]; then
-  echo "No MISTRAL_API_KEY in .env: deploying search only (/ask will return 503)."
-fi
-
 sam build
-sam deploy --region "$REGION" --parameter-overrides "MistralApiKey=${KEY}"
+sam deploy --region "$REGION"
