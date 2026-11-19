@@ -29,7 +29,10 @@ Resources:
       PackageType: Image
       Architectures: [arm64]  # built natively on an Apple Silicon Mac; also ~20% cheaper on Lambda
       MemorySize: 2048  # the embedding model and the index need ~1 GB; more memory also means more CPU
-      Timeout: 60  # an answer can need 3 LLM calls (translate, answer, date tool)
+      # An answer takes 1-3 s, but the first request after a deployment waited about a minute
+      # while Lambda fetched the 470 MB embedding model from the image (3 s on a laptop), and
+      # timed out at 60 s. 120 s lets that request finish instead of failing.
+      Timeout: 120
       LoggingConfig:
         LogGroup: !Ref ApiLogGroup
       Environment:
@@ -84,15 +87,15 @@ Resources:
 
               {"type": "log", "x": 0, "y": 14, "width": 12, "height": 6, "properties": {
                 "title": "Tokens and estimated cost per day (Bedrock list prices, paid from AWS credits first)", "region": "${AWS::Region}", "view": "table",
-                "query": "SOURCE '${LogGroup}' | filter endpoint = '/ask' and status = 200 | stats count(*) as answers, sum(input_tokens) as input_tokens, sum(output_tokens) as output_tokens, sum(est_cost_usd) as est_cost_usd by bin(1d)"}},
+                "query": "SOURCE '${LogGroup}' | filter endpoint = '/ask' and status = 200 | stats count(*) as answers, sum(input_tokens) as total_input_tokens, sum(output_tokens) as total_output_tokens, sum(est_cost_usd) as total_est_cost_usd by bin(1d)"}},
 
               {"type": "log", "x": 12, "y": 14, "width": 12, "height": 6, "properties": {
                 "title": "Retrieval: top score by method (hybrid = RRF scale, dense = cosine)", "region": "${AWS::Region}", "view": "table",
                 "query": "SOURCE '${LogGroup}' | filter event = 'request' and status = 200 | stats count(*) as requests, avg(top_score) as avg_top_score, min(top_score) as min_top_score, avg(n_pages) as avg_distinct_pages by endpoint, retrieval_method"}},
 
               {"type": "log", "x": 0, "y": 20, "width": 12, "height": 6, "properties": {
-                "title": "Cold starts (a new Lambda instance had to load the model)", "region": "${AWS::Region}", "view": "table",
-                "query": "SOURCE '${LogGroup}' | filter @type = 'REPORT' | stats count(*) as invocations, count(@initDuration) as cold_starts, avg(@initDuration) as avg_init_ms, max(@duration) as max_duration_ms by bin(1d)"}},
+                "title": "Cold starts: time to load the index and the embedding model (ms)", "region": "${AWS::Region}", "view": "table",
+                "query": "SOURCE '${LogGroup}' | filter event = 'startup' | stats count(*) as cold_starts, avg(startup_ms) as avg_startup_ms, max(startup_ms) as max_startup_ms, avg(model_ms) as avg_model_ms by bin(1d)"}},
 
               {"type": "metric", "x": 12, "y": 20, "width": 12, "height": 6, "properties": {
                 "title": "Lambda: invocations, errors, throttles", "region": "${AWS::Region}", "view": "timeSeries", "stat": "Sum", "period": 3600,
@@ -102,7 +105,11 @@ Resources:
                   [".", "Throttles", ".", "."]
                 ]}},
 
-              {"type": "log", "x": 0, "y": 26, "width": 24, "height": 6, "properties": {
+              {"type": "log", "x": 0, "y": 26, "width": 24, "height": 4, "properties": {
+                "title": "Lambda: timeouts, longest call and memory used (limit: memory_mb)", "region": "${AWS::Region}", "view": "table",
+                "query": "SOURCE '${LogGroup}' | filter @type = 'REPORT' | stats count(*) as invocations, sum(strcontains(@message, 'Status: timeout')) as timeouts, max(@duration) as max_duration_ms, max(@maxMemoryUsed) / 1000 / 1000 as max_memory_used_mb, max(@memorySize) / 1000 / 1000 as memory_mb by bin(1d)"}},
+
+              {"type": "log", "x": 0, "y": 30, "width": 24, "height": 6, "properties": {
                 "title": "Last 20 requests", "region": "${AWS::Region}", "view": "table",
                 "query": "SOURCE '${LogGroup}' | filter event = 'request' | fields @timestamp, endpoint, status, lang, latency_ms, retrieval_method, n_citations, tool_calls, input_tokens, output_tokens, error | sort @timestamp desc | limit 20"}}
             ]

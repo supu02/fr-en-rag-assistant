@@ -24,7 +24,7 @@ USER appuser
 
 # 3) Build the vector index at build time: downloads the embedding model
 #    (about 470 MB) and embeds the chunks once. The container then starts
-#    fast and needs no network for search. Only /ask calls the Mistral API.
+#    fast and needs no network for search. Only /ask calls the LLM (Amazon Bedrock).
 RUN python -m rag_assistant.index
 
 # 4) Ready for read-only disks (AWS Lambda): never try to download the model at run time.

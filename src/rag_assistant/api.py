@@ -30,7 +30,7 @@ from rag_assistant.config import ANSWER_MODEL
 from rag_assistant.embeddings import embed_query
 from rag_assistant.lang import detect_language
 from rag_assistant.llm import LLMNotConfigured, get_chat_model, llm_configured
-from rag_assistant.monitoring import estimate_cost, log_request
+from rag_assistant.monitoring import estimate_cost, log_event, log_request
 from rag_assistant.retrieve import METHODS, get_retriever, resolve_method
 
 STATIC = Path(__file__).parent / "static"
@@ -38,8 +38,16 @@ STATIC = Path(__file__).parent / "static"
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    get_retriever()  # load the index once, at start-up
-    embed_query("warm-up")  # load the embedding model now, so the first user does not wait for it
+    """Load the index and the embedding model once, so the first user does not wait for them.
+    The time is logged: on Lambda this is most of a cold start (3 s locally, much longer
+    on Lambda the first time it reads the 470 MB model from the image)."""
+    start = time.perf_counter()
+    get_retriever()
+    index_done = time.perf_counter()
+    embed_query("warm-up")
+    done = time.perf_counter()
+    log_event("startup", startup_ms=round((done - start) * 1000),
+              index_ms=round((index_done - start) * 1000), model_ms=round((done - index_done) * 1000))
     yield
 
 

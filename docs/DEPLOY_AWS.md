@@ -6,7 +6,7 @@ Everything is described in [`template.yaml`](../template.yaml) (AWS SAM):
 
 | Resource | What it is |
 |---|---|
-| `ApiFunction` | The Docker image on Lambda (arm64, 2 GB memory, 60 s timeout) with a public URL. Its IAM role may call one Bedrock model: Ministral 3 14B in Ireland |
+| `ApiFunction` | The Docker image on Lambda (arm64, 2 GB memory, 120 s timeout) with a public URL. Its IAM role may call one Bedrock model: Ministral 3 14B in Ireland |
 | `ApiLogGroup` | CloudWatch log group for the request logs, kept 30 days |
 | `Dashboard` | CloudWatch dashboard built from the request logs (see [Monitoring](#monitoring)) |
 
@@ -75,8 +75,11 @@ Check it:
 ./scripts/smoke_test.sh <ApiUrl>
 ```
 
-The first request after a quiet period is slower (a *cold start*: a new Lambda instance
-loads the image, the index and the embedding model). The dashboard counts cold starts.
+The first request after a quiet period is slower: a *cold start*, where a new Lambda instance
+loads the image, the index and the embedding model. On a laptop this takes 3 seconds. On Lambda,
+the first start after a deployment took about a minute (measured on 19 November 2026): Lambda
+fetches the image's files the first time they are read, and the embedding model is 470 MB.
+The dashboard shows each cold start and how long it took.
 
 To update after a code change, run `./scripts/deploy_aws.sh` again.
 To remove everything: `sam delete`.
@@ -93,7 +96,8 @@ CloudWatch Logs Insights:
 - `/ask` answers with and without a citation, by language
 - tokens and estimated cost per day
 - retrieval score by method
-- cold starts, and Lambda's own invocations / errors / throttles
+- cold starts and how long each start-up took (index and embedding model)
+- Lambda's own invocations, errors, throttles and timeouts, the longest call and the memory used
 - the last 20 requests
 
 The question and the answer are never logged, only their length.
@@ -134,6 +138,7 @@ aws lambda put-function-concurrency --function-name <function name> --reserved-c
 - **403 Forbidden on the URL:** the function needs a resource policy allowing both
   `lambda:InvokeFunctionUrl` and `lambda:InvokeFunction`. SAM normally creates it; check
   Lambda console → Configuration → Permissions. Update the SAM CLI if it is old.
-- **Timeout on the first call:** a cold start plus an `/ask` call can take several seconds;
-  call `/health` first, then retry.
+- **Slow first call:** the first request after a deployment can take about a minute (see
+  [Deploy](#deploy)). The function's timeout is 120 s so that this request still succeeds.
+  Call `/health` and wait for its answer before using the page.
 - **Errors in the logs:** CloudWatch → Log groups → `/aws/lambda/fr-en-rag-assistant`.

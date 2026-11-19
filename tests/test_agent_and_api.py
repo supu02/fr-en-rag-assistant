@@ -131,8 +131,13 @@ def test_run_counts_tokens_of_every_llm_call():
     assert result["retrieved"][0]["score"] == 0.9
 
 
+def _logs(caplog, event="request"):
+    lines = [json.loads(r.getMessage()) for r in caplog.records if r.name == "rag_assistant.requests"]
+    return [line for line in lines if line["event"] == event]
+
+
 def _request_logs(caplog):
-    return [json.loads(r.getMessage()) for r in caplog.records if r.name == "rag_assistant.requests"]
+    return _logs(caplog, "request")
 
 
 def test_api_writes_one_log_line_per_request(monkeypatch, caplog):
@@ -155,6 +160,8 @@ def test_api_writes_one_log_line_per_request(monkeypatch, caplog):
         r = client.post("/ask", json={"question": "Quel est le prix d'un passeport ?"})
 
     assert r.headers["X-Request-ID"]
+    (startup,) = _logs(caplog, "startup")  # one line when the app starts (a cold start on Lambda)
+    assert startup["startup_ms"] >= startup["model_ms"] >= 0 and startup["index_ms"] >= 0
     search_log, ask_log = _request_logs(caplog)  # /health is not logged
     assert search_log["endpoint"] == "/search" and search_log["status"] == 200
     assert search_log["lang"] == "fr" and search_log["retrieval_method"] == "hybrid"

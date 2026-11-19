@@ -10,7 +10,9 @@ Why standard output? Every cloud platform collects it with no extra code (AWS Cl
 Logs, Google Cloud Logging, Azure Monitor), and locally you can read it in the terminal.
 
 What is logged: timing, status, language, retrieval method and score, number of
-citations, tool calls, tokens and an estimated cost.
+citations, tool calls, tokens and an estimated cost. When the app starts (a cold
+start on Lambda), one "startup" line gives the time spent loading the index and the
+embedding model.
 What is NOT logged: the question and the answer, because users may type personal
 details. Only their length is kept.
 
@@ -99,7 +101,11 @@ def estimate_cost(input_tokens: int, output_tokens: int, model: str = ANSWER_MOD
     return round((input_tokens * price_in + output_tokens * price_out) / 1_000_000, 6)
 
 
-def log_request(**fields: Any) -> dict:
-    record = {"event": "request", "ts": round(time.time(), 3), **fields}
+def log_event(event: str, **fields: Any) -> dict:
+    record = {"event": event, "ts": round(time.time(), 3), **fields}
     logger.info(json.dumps(record, ensure_ascii=False, default=str))
     return record
+
+
+def log_request(**fields: Any) -> dict:
+    return log_event("request", **fields)

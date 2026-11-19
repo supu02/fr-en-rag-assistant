@@ -144,8 +144,10 @@ flowchart LR
   (scales to zero when unused). It answers with Ministral 3 14B on **Amazon Bedrock**, called with
   the function's own IAM role, so no API key is stored anywhere.
   Infrastructure as code with AWS SAM in [`template.yaml`](template.yaml);
-  step-by-step guide in [`docs/DEPLOY_AWS.md`](docs/DEPLOY_AWS.md). *Not deployed yet: the public URL
-  will be added here once it is live.*
+  step-by-step guide in [`docs/DEPLOY_AWS.md`](docs/DEPLOY_AWS.md).
+  **Live demo:** https://3iiwsq52ujtjdx5gwubcs2sj6a0lylfs.lambda-url.eu-north-1.on.aws/ (API docs at
+  [`/docs`](https://3iiwsq52ujtjdx5gwubcs2sj6a0lylfs.lambda-url.eu-north-1.on.aws/docs)). After a quiet
+  period the first request can take up to a minute while Lambda starts a new instance.
 - **Monitoring:** every `/ask` and `/search` call writes one JSON log line: latency, status and
   error type, language, retrieval method and top score, number of citations, tool calls, LLM
   tokens and estimated cost. The question and the answer are not logged. On AWS, a CloudWatch
