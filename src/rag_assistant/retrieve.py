@@ -27,6 +27,13 @@ from rag_assistant.lang import detect_language
 METHODS = ("dense", "dense_diverse", "lexical", "hybrid", "auto")
 
 
+def resolve_method(query: str, method: str = "auto") -> str:
+    """The method actually used: 'auto' becomes 'hybrid' (French) or 'dense_diverse' (English)."""
+    if method != "auto":
+        return method
+    return "hybrid" if detect_language(query) == "fr" else "dense_diverse"
+
+
 def tokenize(text: str) -> list[str]:
     """Lowercase, remove accents, keep words of 2+ letters (for BM25)."""
     text = unicodedata.normalize("NFKD", text.lower())
@@ -78,7 +85,7 @@ class Retriever:
 
     def auto(self, query: str, k: int = TOP_K) -> list[dict]:
         """BM25 only helps when the question shares words with the French pages."""
-        return self.hybrid(query, k) if detect_language(query) == "fr" else self.dense_diverse(query, k)
+        return getattr(self, resolve_method(query))(query, k)
 
     def close(self) -> None:
         self.client.close()

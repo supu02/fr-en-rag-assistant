@@ -49,3 +49,12 @@ Numbers come from `results/`; see the README for the full tables.
 - **FastAPI**: `/search` works without an API key (useful for a public demo and for CI smoke tests); `/ask` returns 503 if the key is missing.
 - **The index is built inside the Docker image**, so the container starts fast and search needs no network. Only `/ask` calls the Mistral API.
 - **Secrets** come from environment variables (`.env` locally, platform secrets in the cloud); `.env` is in both `.gitignore` and `.dockerignore`.
+
+## Monitoring
+
+- **One JSON line per request on stdout** (`src/rag_assistant/monitoring.py`), for `/ask` and `/search`: latency, status, error type, language, retrieval method and top score, number of distinct pages, number of citations, tool calls, LLM calls, input/output tokens and an estimated cost at list prices. `/health` is not logged, because the platform calls it every few seconds.
+- **Why stdout and not a monitoring SDK?** Every cloud platform collects stdout with no extra code (CloudWatch Logs on AWS, Cloud Logging on Google Cloud), so the app does not depend on one vendor. The dashboard is built on top of these lines in the cloud's own tools.
+- **No user text in the logs.** The question and the answer are not logged (users may type personal details); only their length is.
+- **Warning signs, not quality scores.** Live traffic has no correct-answer labels. An answer with no citation is either a refusal or an unsupported answer; a low top score often means an out-of-scope question. Answer quality is measured offline by the evaluation suite.
+- **Scores are not comparable across methods:** French questions use hybrid search (RRF scores around 0.03), English ones dense search (cosine around 0.8), so `retrieval_method` is logged next to `top_score`.
+- **Tokens** come from a LangChain callback (`TokenCounter`) passed to every LLM call in the graph, so the translation call is counted too.

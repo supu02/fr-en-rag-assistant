@@ -30,6 +30,7 @@ from langgraph.prebuilt import ToolNode, tools_condition
 from rag_assistant import tools as date_tools
 from rag_assistant.config import TOP_K
 from rag_assistant.lang import detect_language
+from rag_assistant.monitoring import TokenCounter
 
 TRANSLATE_QUERIES = os.getenv("TRANSLATE_QUERIES", "1") == "1"
 LANG_NAME = {"fr": "French", "en": "English"}
@@ -137,8 +138,9 @@ def build_graph(llm, retriever, k: int = TOP_K, translate: bool = TRANSLATE_QUER
 
 
 def run(graph, question: str, max_steps: int = 10) -> dict:
-    """Run the graph and return a clean, JSON-friendly result."""
-    state = graph.invoke({"question": question}, config={"recursion_limit": max_steps})
+    """Run the graph and return a clean, JSON-friendly result (with token usage)."""
+    tokens = TokenCounter()  # passed to every LLM call inside the graph through the config
+    state = graph.invoke({"question": question}, config={"recursion_limit": max_steps, "callbacks": [tokens]})
     final = state["messages"][-1]
     answer = final.content if isinstance(final.content, str) else str(final.content)
     sources = state["sources"]
@@ -153,7 +155,9 @@ def run(graph, question: str, max_steps: int = 10) -> dict:
         "citations": [{"n": n, "page_id": sources[n - 1]["page_id"], "title": sources[n - 1]["page_title"],
                        "section": sources[n - 1]["section"], "url": sources[n - 1]["url"]}
                       for n in cited_numbers],
-        "retrieved": [{"n": i, "chunk_id": s["chunk_id"], "page_id": s["page_id"], "title": s["page_title"]}
+        "retrieved": [{"n": i, "chunk_id": s["chunk_id"], "page_id": s["page_id"], "title": s["page_title"],
+                       "score": round(s["score"], 4)}
                       for i, s in enumerate(sources, start=1)],
         "tool_calls": tool_calls,
+        "usage": tokens.as_dict(),
     }
