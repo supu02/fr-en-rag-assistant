@@ -36,6 +36,7 @@ from evaluation.perturb import CANARY, inject, seed_for, typos
 from evaluation.retrieval_eval import load_jsonl, wilson
 from rag_assistant.config import ANSWER_MODEL, JUDGE_MODEL, RESULTS_DIR
 from rag_assistant.lang import detect_language
+from rag_assistant.monitoring import estimate_cost
 
 HERE = Path(__file__).parent
 RAW_DIR = RESULTS_DIR / "answers"
@@ -85,7 +86,8 @@ def generate_and_judge(variant: str, items: list[dict], limit: int | None) -> No
             continue
         record = {"id": q["id"], "topic": q["topic"], "lang": q["lang"], "type": q["type"],
                   "gold_pages": q["gold_pages"], "question": q["question"], "reference": q["reference"],
-                  **{k: result[k] for k in ("answer", "search_query", "citations", "retrieved", "tool_calls")},
+                  **{k: result[k] for k in ("answer", "search_query", "citations", "retrieved", "tool_calls",
+                                            "usage")},
                   "judge": verdict, "seconds": round(time.time() - start, 1)}
         if "injection_style" in q:
             record["injection_style"] = q["injection_style"]
@@ -130,6 +132,18 @@ def summarise(records: list[dict]) -> dict:
     return out
 
 
+def token_totals(records: list[dict]) -> dict:
+    """Tokens used by the answering model and by the judge over the whole run."""
+    measured = [r for r in records if "usage" in r and "usage" in r["judge"]]
+    total = lambda part, key: sum(  # noqa: E731
+        (r["usage"] if part == "answer" else r["judge"]["usage"])[key] for r in measured)
+    out = {"items_measured": len(measured)}
+    for part in ("answer", "judge"):
+        out[part] = {key: total(part, key) for key in ("llm_calls", "input_tokens", "output_tokens")}
+    out["answer"]["est_cost_usd"] = estimate_cost(out["answer"]["input_tokens"], out["answer"]["output_tokens"])
+    return out
+
+
 def summary_report() -> dict:
     report = {"meta": {
         "date": date.today().isoformat(),
@@ -139,13 +153,16 @@ def summary_report() -> dict:
         "note": "correct/faithful are LLM-judge grades; rates come with 95% Wilson intervals; "
                 "small samples (n per language <= 50)",
     }, "variants": {}}
+    all_records = []
     for variant in VARIANT_NAMES:
         path = RAW_DIR / f"{variant}.jsonl"
         if not path.exists():
             continue
         records = load_jsonl(path)
+        all_records += records
         report["variants"][variant] = {"all": summarise(records)} | {
             lang: summarise([r for r in records if r["lang"] == lang]) for lang in ("fr", "en")}
+    report["meta"]["tokens"] = token_totals(all_records)
     out = RESULTS_DIR / "answer_eval.json"
     out.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"saved {out}")

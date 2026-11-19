@@ -19,6 +19,7 @@ from pydantic import BaseModel, Field
 
 from rag_assistant.config import JUDGE_MODEL
 from rag_assistant.llm import get_judge_model
+from rag_assistant.monitoring import TokenCounter
 
 JUDGE_PROMPT = """You grade an assistant's answer to a question about French administrative rules.
 
@@ -67,7 +68,10 @@ def cited_text(result: dict, sources_by_chunk: dict[str, dict]) -> str:
 
 def judge(question: dict, result: dict, sources_by_chunk: dict[str, dict]) -> dict:
     grader = get_judge_model().with_structured_output(Verdict)
+    tokens = TokenCounter()
     verdict: Verdict = grader.invoke(JUDGE_PROMPT.format(
         question=question["question"], reference=question["reference"],
-        answer=result["answer"], cited=cited_text(result, sources_by_chunk)))
-    return verdict.model_dump() | {"score": SCORE[verdict.correctness], "judge_model": JUDGE_MODEL}
+        answer=result["answer"], cited=cited_text(result, sources_by_chunk)),
+        config={"callbacks": [tokens]})
+    return verdict.model_dump() | {"score": SCORE[verdict.correctness], "judge_model": JUDGE_MODEL,
+                                   "usage": tokens.as_dict()}
