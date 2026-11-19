@@ -70,7 +70,9 @@ def answer_tables(a: dict) -> list[str]:
         "",
         f"### Answers (answer model `{m['answer_model']}`, judge `{m['judge_model']}`)",
         "",
-        "\"Correct\" and \"faithful\" are grades from the LLM judge. Brackets: 95% interval.",
+        "\"Correct\" and \"faithful\" are grades from the LLM judge. Brackets: 95% interval. "
+        "n counts every question; \"Correct\", retrieval and citation rates leave out the out-of-scope "
+        "questions (5 per language), which are counted in the checks below.",
         "",
         "| Variant | Lang | n | Correct | Faithful to cited sources | Retrieval hit@5 | Cites a gold page "
         "| Answer in question's language |",
@@ -138,6 +140,9 @@ def findings(r: dict | None, a: dict | None) -> list[str]:
         c = a["variants"]["clean"]
         out.append(f"Answers graded correct: {pct(c['fr']['correct']['rate'])} in French, "
                    f"{pct(c['en']['correct']['rate'])} in English.")
+        fr_d, en_d = c["fr"]["false_abstention"], c["en"]["false_abstention"]
+        out.append(f"English questions were wrongly answered with \"I cannot find this\" more often: "
+                   f"{en_d['k']} of {en_d['n']} answerable English questions vs {fr_d['k']} of {fr_d['n']} French ones.")
         if r:
             out.append(f"Translating English questions to French before the search: English retrieval hit@5 "
                        f"{pct(r['methods']['auto']['en']['hit@5'])} without translation (retrieval-only run) vs "

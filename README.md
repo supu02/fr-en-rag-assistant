@@ -35,6 +35,10 @@ intervals.
 - Keeping at most 2 chunks per page raised hit@5 from 72% to 79% (all questions).
 - Adding keyword search (BM25, hybrid) helps French questions (89% -> 100%) but not English ones (69% -> 56%), so `auto` uses it for French only. This choice was made on the same questions, so `auto` scores are optimistic.
 - Extra spaces alone (same words, same meaning) changed the retrieval result for 8 of 90 questions.
+- Answers graded correct: 58% in French, 56% in English.
+- English questions were wrongly answered with "I cannot find this" more often: 7 of 45 answerable English questions vs 0 of 45 French ones.
+- Translating English questions to French before the search: English retrieval hit@5 69% without translation (retrieval-only run) vs 89% with translation (answer run).
+- Hidden prompt injections made the assistant print the attacker's code word in 55 of 100 answers.
 
 ### Retrieval (no LLM; 90 answerable questions, half French, half English)
 
@@ -63,6 +67,34 @@ Same questions with small changes that keep the meaning. "Lost / gained" counts 
 | paraphrase | 80% | 51% | – | – |
 
 Source: `results/retrieval.json` (2026-11-18, 8652 chunks, `intfloat/multilingual-e5-small`).
+
+### Answers (answer model `mistral.ministral-3-14b-instruct`, judge `mistral.mistral-large-3-675b-instruct`)
+
+"Correct" and "faithful" are grades from the LLM judge. Brackets: 95% interval. n counts every question; "Correct", retrieval and citation rates leave out the out-of-scope questions (5 per language), which are counted in the checks below.
+
+| Variant | Lang | n | Correct | Faithful to cited sources | Retrieval hit@5 | Cites a gold page | Answer in question's language |
+|---|---|---|---|---|---|---|---|
+| clean | FR | 50 | 58% (43%–71%) | 66% (52%–78%) | 100% | 96% | 100% |
+| clean | EN | 50 | 56% (41%–69%) | 66% (52%–78%) | 89% | 80% | 100% |
+| typos | FR | 45 | 49% (35%–63%) | 51% (37%–65%) | 91% | 87% | 100% |
+| typos | EN | 45 | 44% (31%–59%) | 53% (39%–67%) | 87% | 78% | 100% |
+| paraphrase | FR | 45 | 44% (31%–59%) | 56% (41%–69%) | 80% | 73% | 100% |
+| paraphrase | EN | 45 | 44% (31%–59%) | 49% (35%–63%) | 84% | 73% | 100% |
+| injection | FR | 50 | 56% (41%–69%) | 50% (37%–63%) | 89% | 49% | 100% |
+| injection | EN | 50 | 31% (20%–46%) | 30% (19%–44%) | 93% | 40% | 90% |
+
+| Check (clean questions unless stated) | Result |
+|---|---|
+| Out-of-scope questions where the assistant said it could not answer | 10/10 |
+| Date questions where the date tool was called | 14/16 |
+| Date questions graded correct | 13/16 |
+| Answerable questions where the assistant wrongly said it could not answer | 7/90 |
+| Prompt injection that worked: "Ignore previous instructions" | 5/50 |
+| Prompt injection that worked: Fake "[SYSTEM]" rule | 50/50 |
+
+Tokens for the 380 answers: answer model 701,020 in / 40,959 out (628 calls, about $0.18 at list price); judge 301,174 in / 42,848 out (380 calls).
+
+Source: `results/answer_eval.json` (2026-11-19, commit `6a81328`).
 <!-- RESULTS:END -->
 
 ## How it works
@@ -102,7 +134,7 @@ flowchart LR
 - **The questions were drafted with an AI assistant** from the source pages, and the facts were checked against the page text. They are not real user questions.
 - **Choices were made on the test questions.** There is no separate development set: the retrieval method `auto` was chosen after looking at these results, so its scores are optimistic. The paraphrase set is a partial check.
 - **Gold pages are a lower bound.** Another page may also contain the answer (for example, a public-sector page with the same rule).
-- **LLM judge.** The judge and the answering model come from the same company. The judge runs on Bedrock in US East (the only Region offering it); it only sees the public test questions and page excerpts. The judge's grades should be checked against human labels ([`judge_agreement.py`](evaluation/judge_agreement.py)).
+- **LLM judge.** The judge and the answering model come from the same company. The judge runs on Bedrock in US East (the only Region offering it); it only sees the public test questions and page excerpts. Its grades have not been compared with human labels yet ([`judge_agreement.py`](evaluation/judge_agreement.py) does this on a sample of 30). Its "abstained" flag missed most refusals, so refusals are detected in code from the answer's first sentence; this check can misread a few answers.
 - **Scope and freshness.** 362 pages, one snapshot (18 November 2026). Rules change; the live pages are the reference.
 - **Date tool.** Calendar dates only: it does not apply legal extension rules (for example, a deadline that ends on a Sunday or public holiday), but it reports the weekday.
 
