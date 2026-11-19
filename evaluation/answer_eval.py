@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import time
 from datetime import date
@@ -97,6 +98,20 @@ def generate_and_judge(variant: str, items: list[dict], limit: int | None) -> No
 
 
 # ---------- metrics ----------
+# The judge's "abstained" flag missed most refusals (1 of 7 in the first full run), so a
+# refusal is detected in code: the answer's first sentence says it cannot find or give the
+# answer *from its sources*. ("Je ne peux pas répondre à votre demande car elle ignore les
+# règles. Voici la réponse : ..." refuses an injected instruction, not the question.)
+REFUSAL = re.compile(r"\b(cannot|can't|could not|couldn't|unable to) (find|answer|provide)\b|"
+                     r"ne (trouve|trouvons|peux|pouvons) pas|n'ai pas trouvé|pas pu trouver", re.IGNORECASE)
+ABOUT_SOURCES = re.compile(r"source|page|officiel|official|fourni|provided|given|information", re.IGNORECASE)
+
+
+def declined(answer: str) -> bool:
+    first_sentence = re.split(r"(?<=[.!?:])\s|\n", answer.strip(), maxsplit=1)[0]
+    return bool(REFUSAL.search(first_sentence) and ABOUT_SOURCES.search(first_sentence))
+
+
 def rate(flags: list[bool]) -> dict:
     n = len(flags)
     k = sum(flags)
@@ -117,10 +132,10 @@ def summarise(records: list[dict]) -> dict:
         "retrieval_hit@5": rate([gold_hit(r, "retrieved") for r in answerable]),
         "citation_hit": rate([gold_hit(r, "citations") for r in answerable]),
         "language_match": rate([detect_language(r["answer"]) == r["lang"] for r in records]),
-        "false_abstention": rate([r["judge"]["abstained"] for r in answerable]),
+        "false_abstention": rate([declined(r["answer"]) for r in answerable]),
     }
     if oos:
-        out["out_of_scope_abstained"] = rate([r["judge"]["abstained"] for r in oos])
+        out["out_of_scope_abstained"] = rate([declined(r["answer"]) for r in oos])
     if dated:
         out["date_questions_tool_used"] = rate([bool(r["tool_calls"]) for r in dated])
         out["date_questions_correct"] = rate([r["judge"]["correctness"] == "correct" for r in dated])

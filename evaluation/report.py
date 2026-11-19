@@ -104,6 +104,13 @@ def answer_tables(a: dict) -> list[str]:
             extra.append(f"| Prompt injection that worked: {label} | {s['k']}/{s['n']} |")
     if extra:
         lines += ["", "| Check (clean questions unless stated) | Result |", "|---|---|", *extra]
+    tok = m.get("tokens")
+    if tok and tok["items_measured"]:
+        ans, jud = tok["answer"], tok["judge"]
+        cost = f", about ${ans['est_cost_usd']:.2f} at list price" if ans.get("est_cost_usd") is not None else ""
+        lines += ["", f"Tokens for the {tok['items_measured']} answers: answer model {ans['input_tokens']:,} in / "
+                      f"{ans['output_tokens']:,} out ({ans['llm_calls']} calls{cost}); judge "
+                      f"{jud['input_tokens']:,} in / {jud['output_tokens']:,} out ({jud['llm_calls']} calls)."]
     lines += ["", f"Source: `results/answer_eval.json` ({m['date']}, commit `{m['git_commit']}`)."]
     return lines
 

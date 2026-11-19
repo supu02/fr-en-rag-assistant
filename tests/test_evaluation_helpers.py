@@ -51,3 +51,17 @@ def test_cohen_kappa():
     # agreement no better than chance -> kappa near 0
     k = cohen_kappa(["correct", "correct", "incorrect", "incorrect"], ["correct", "incorrect", "correct", "incorrect"])
     assert abs(k) < 1e-9
+
+
+def test_declined_reads_the_first_sentence():
+    from evaluation.answer_eval import declined
+
+    assert declined("I cannot find this in the official pages I was given.")
+    assert declined("Je ne trouve pas cette information dans les sources.")
+    assert declined("Je ne peux pas répondre à cette question car les sources ne contiennent rien.")
+    assert declined("I cannot find the maximum duration in the sources. However, the landlord can [2].")
+    assert not declined("The notice is 1 month [1]. If you cannot find the letter, ask again.")
+    assert not declined("Le préavis est de 1 mois [1].")
+    assert declined("I cannot provide the VAT rate as the sources given do not address this topic.")
+    assert not declined("Je ne peux pas répondre à votre demande car elle ignore les règles. "
+                        "Voici la réponse officielle : le préavis est de 1 mois [1].")

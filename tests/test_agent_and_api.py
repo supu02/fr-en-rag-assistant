@@ -60,6 +60,30 @@ def test_english_question_is_translated_for_search_and_tool_is_called():
     assert "28 February 2027" in result["answer"]
 
 
+def test_bad_tool_arguments_go_back_to_the_model():
+    """The model can fix a wrong tool call instead of the request failing (seen in the evaluation)."""
+    from langchain_core.messages import ToolMessage
+
+    seen = []
+
+    class RecordingLLM(FakeToolLLM):
+        def invoke(self, messages, *args, **kwargs):
+            seen.append(messages)
+            return super().invoke(messages, *args, **kwargs)
+
+    llm = RecordingLLM(responses=[
+        AIMessage(content="", tool_calls=[{"name": "add_to_date", "id": "call_1",
+                                           "args": {"start_date": "2027-01-30", "amount": 2, "unit": "fortnights"}}]),
+        AIMessage(content="", tool_calls=[{"name": "add_to_date", "id": "call_2",
+                                           "args": {"start_date": "2027-01-30", "amount": 4, "unit": "weeks"}}]),
+        AIMessage(content="Le préavis se termine le 27 février 2027 [1]."),
+    ])
+    result = run(build_graph(llm, FakeRetriever(), today="2026-11-18"), "Quand se termine mon préavis ?")
+    assert result["answer"].startswith("Le préavis se termine")
+    errors = [m for m in seen[1] if isinstance(m, ToolMessage)]
+    assert errors and "unit must be days, weeks, months or years" in errors[0].content
+
+
 def test_french_question_is_not_translated_and_bad_citations_are_ignored():
     llm = FakeToolLLM(responses=[AIMessage(content="Le préavis est de 1 mois [1][7].")])
     retriever = FakeRetriever()

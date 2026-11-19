@@ -128,7 +128,9 @@ def build_graph(llm, retriever, k: int = TOP_K, translate: bool = TRANSLATE_QUER
     graph.add_node("translate", translate_node)
     graph.add_node("retrieve", retrieve_node)
     graph.add_node("agent", agent_node)
-    graph.add_node("tools", ToolNode(TOOLS))
+    # A bad tool argument (unit "fortnights", date "next Monday") goes back to the model as an
+    # error message it can correct, instead of failing the whole request.
+    graph.add_node("tools", ToolNode(TOOLS, handle_tool_errors=(ValueError,)))
     graph.add_edge(START, "translate")
     graph.add_edge("translate", "retrieve")
     graph.add_edge("retrieve", "agent")
