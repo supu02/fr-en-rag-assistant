@@ -1,64 +1,66 @@
 {
   "meta": {
-    "date": "2026-11-19",
+    "date": "2026-11-20",
     "answer_model": "mistral.ministral-3-14b-instruct",
     "judge_model": "mistral.mistral-large-3-675b-instruct",
-    "git_commit": "6a81328",
+    "git_commit": "84177c3",
     "note": "correct/faithful are LLM-judge grades; rates come with 95% Wilson intervals; small samples (n per language <= 50)",
     "tokens": {
       "items_measured": 380,
       "answer": {
-        "llm_calls": 628,
-        "input_tokens": 701020,
-        "output_tokens": 40959,
-        "est_cost_usd": 0.178075
+        "llm_calls": 621,
+        "input_tokens": 1309544,
+        "output_tokens": 43845,
+        "est_cost_usd": 0.324813
       },
       "judge": {
         "llm_calls": 380,
-        "input_tokens": 301174,
-        "output_tokens": 42848
-      }
+        "input_tokens": 473350,
+        "output_tokens": 43796,
+        "est_cost_usd": 0.302369
+      },
+      "median_seconds_per_item": 3.4
     }
   },
   "variants": {
     "clean": {
       "all": {
         "n": 100,
-        "correctness_mean": 0.711,
+        "correctness_mean": 0.789,
         "correct": {
-          "rate": 0.567,
-          "k": 51,
+          "rate": 0.689,
+          "k": 62,
           "n": 90,
           "ci95": [
-            0.464,
-            0.664
+            0.587,
+            0.775
           ]
         },
         "faithful": {
-          "rate": 0.66,
-          "k": 66,
+          "rate": 0.77,
+          "k": 77,
           "n": 100,
           "ci95": [
-            0.563,
-            0.745
+            0.678,
+            0.842
           ]
         },
         "retrieval_hit@5": {
-          "rate": 0.944,
-          "k": 85,
+          "rate": 0.956,
+          "k": 86,
           "n": 90,
           "ci95": [
-            0.876,
-            0.976
+            0.891,
+            0.983
           ]
         },
         "citation_hit": {
-          "rate": 0.878,
-          "k": 79,
+          "rate": 0.933,
+          "k": 84,
           "n": 90,
           "ci95": [
-            0.794,
-            0.93
+            0.862,
+            0.969
           ]
         },
         "language_match": {
@@ -71,12 +73,21 @@
           ]
         },
         "false_abstention": {
-          "rate": 0.078,
-          "k": 7,
+          "rate": 0.044,
+          "k": 4,
           "n": 90,
           "ci95": [
-            0.038,
-            0.152
+            0.017,
+            0.109
+          ]
+        },
+        "reference_numbers_in_answer": {
+          "rate": 0.667,
+          "k": 40,
+          "n": 60,
+          "ci95": [
+            0.541,
+            0.773
           ]
         },
         "out_of_scope_abstained": {
@@ -98,34 +109,34 @@
           ]
         },
         "date_questions_correct": {
-          "rate": 0.812,
-          "k": 13,
+          "rate": 0.875,
+          "k": 14,
           "n": 16,
           "ci95": [
-            0.57,
-            0.934
+            0.64,
+            0.965
           ]
         }
       },
       "fr": {
         "n": 50,
-        "correctness_mean": 0.756,
+        "correctness_mean": 0.833,
         "correct": {
-          "rate": 0.578,
-          "k": 26,
+          "rate": 0.711,
+          "k": 32,
           "n": 45,
           "ci95": [
-            0.433,
-            0.71
+            0.566,
+            0.823
           ]
         },
         "faithful": {
-          "rate": 0.66,
-          "k": 33,
+          "rate": 0.78,
+          "k": 39,
           "n": 50,
           "ci95": [
-            0.522,
-            0.776
+            0.648,
+            0.872
           ]
         },
         "retrieval_hit@5": {
@@ -138,12 +149,12 @@
           ]
         },
         "citation_hit": {
-          "rate": 0.956,
-          "k": 43,
+          "rate": 1.0,
+          "k": 45,
           "n": 45,
           "ci95": [
-            0.852,
-            0.988
+            0.921,
+            1.0
           ]
         },
         "language_match": {
@@ -164,6 +175,15 @@
             0.079
           ]
         },
+        "reference_numbers_in_answer": {
+          "rate": 0.727,
+          "k": 24,
+          "n": 33,
+          "ci95": [
+            0.558,
+            0.849
+          ]
+        },
         "out_of_scope_abstained": {
           "rate": 1.0,
           "k": 5,
@@ -183,197 +203,34 @@
           ]
         },
         "date_questions_correct": {
-          "rate": 1.0,
-          "k": 8,
+          "rate": 0.875,
+          "k": 7,
           "n": 8,
           "ci95": [
-            0.676,
-            1.0
+            0.529,
+            0.978
           ]
         }
       },
       "en": {
         "n": 50,
-        "correctness_mean": 0.667,
+        "correctness_mean": 0.744,
         "correct": {
-          "rate": 0.556,
-          "k": 25,
+          "rate": 0.667,
+          "k": 30,
           "n": 45,
           "ci95": [
-            0.412,
-            0.691
+            0.521,
+            0.786
           ]
         },
         "faithful": {
-          "rate": 0.66,
-          "k": 33,
+          "rate": 0.76,
+          "k": 38,
           "n": 50,
           "ci95": [
-            0.522,
-            0.776
-          ]
-        },
-        "retrieval_hit@5": {
-          "rate": 0.889,
-          "k": 40,
-          "n": 45,
-          "ci95": [
-            0.765,
-            0.952
-          ]
-        },
-        "citation_hit": {
-          "rate": 0.8,
-          "k": 36,
-          "n": 45,
-          "ci95": [
-            0.662,
-            0.891
-          ]
-        },
-        "language_match": {
-          "rate": 1.0,
-          "k": 50,
-          "n": 50,
-          "ci95": [
-            0.929,
-            1.0
-          ]
-        },
-        "false_abstention": {
-          "rate": 0.156,
-          "k": 7,
-          "n": 45,
-          "ci95": [
-            0.077,
-            0.288
-          ]
-        },
-        "out_of_scope_abstained": {
-          "rate": 1.0,
-          "k": 5,
-          "n": 5,
-          "ci95": [
-            0.566,
-            1.0
-          ]
-        },
-        "date_questions_tool_used": {
-          "rate": 0.75,
-          "k": 6,
-          "n": 8,
-          "ci95": [
-            0.409,
-            0.929
-          ]
-        },
-        "date_questions_correct": {
-          "rate": 0.625,
-          "k": 5,
-          "n": 8,
-          "ci95": [
-            0.306,
-            0.863
-          ]
-        }
-      }
-    },
-    "typos": {
-      "all": {
-        "n": 90,
-        "correctness_mean": 0.644,
-        "correct": {
-          "rate": 0.467,
-          "k": 42,
-          "n": 90,
-          "ci95": [
-            0.367,
-            0.569
-          ]
-        },
-        "faithful": {
-          "rate": 0.522,
-          "k": 47,
-          "n": 90,
-          "ci95": [
-            0.42,
-            0.622
-          ]
-        },
-        "retrieval_hit@5": {
-          "rate": 0.889,
-          "k": 80,
-          "n": 90,
-          "ci95": [
-            0.807,
-            0.939
-          ]
-        },
-        "citation_hit": {
-          "rate": 0.822,
-          "k": 74,
-          "n": 90,
-          "ci95": [
-            0.731,
-            0.888
-          ]
-        },
-        "language_match": {
-          "rate": 1.0,
-          "k": 90,
-          "n": 90,
-          "ci95": [
-            0.959,
-            1.0
-          ]
-        },
-        "false_abstention": {
-          "rate": 0.111,
-          "k": 10,
-          "n": 90,
-          "ci95": [
-            0.061,
-            0.193
-          ]
-        },
-        "date_questions_tool_used": {
-          "rate": 0.75,
-          "k": 12,
-          "n": 16,
-          "ci95": [
-            0.505,
-            0.898
-          ]
-        },
-        "date_questions_correct": {
-          "rate": 0.688,
-          "k": 11,
-          "n": 16,
-          "ci95": [
-            0.444,
-            0.858
-          ]
-        }
-      },
-      "fr": {
-        "n": 45,
-        "correctness_mean": 0.678,
-        "correct": {
-          "rate": 0.489,
-          "k": 22,
-          "n": 45,
-          "ci95": [
-            0.35,
-            0.63
-          ]
-        },
-        "faithful": {
-          "rate": 0.511,
-          "k": 23,
-          "n": 45,
-          "ci95": [
-            0.37,
-            0.65
+            0.626,
+            0.857
           ]
         },
         "retrieval_hit@5": {
@@ -396,10 +253,10 @@
         },
         "language_match": {
           "rate": 1.0,
-          "k": 45,
-          "n": 45,
+          "k": 50,
+          "n": 50,
           "ci95": [
-            0.921,
+            0.929,
             1.0
           ]
         },
@@ -412,612 +269,13 @@
             0.207
           ]
         },
-        "date_questions_tool_used": {
-          "rate": 0.75,
-          "k": 6,
-          "n": 8,
-          "ci95": [
-            0.409,
-            0.929
-          ]
-        },
-        "date_questions_correct": {
-          "rate": 0.875,
-          "k": 7,
-          "n": 8,
-          "ci95": [
-            0.529,
-            0.978
-          ]
-        }
-      },
-      "en": {
-        "n": 45,
-        "correctness_mean": 0.611,
-        "correct": {
-          "rate": 0.444,
-          "k": 20,
-          "n": 45,
-          "ci95": [
-            0.309,
-            0.588
-          ]
-        },
-        "faithful": {
-          "rate": 0.533,
-          "k": 24,
-          "n": 45,
-          "ci95": [
-            0.391,
-            0.671
-          ]
-        },
-        "retrieval_hit@5": {
-          "rate": 0.867,
-          "k": 39,
-          "n": 45,
-          "ci95": [
-            0.738,
-            0.937
-          ]
-        },
-        "citation_hit": {
-          "rate": 0.778,
-          "k": 35,
-          "n": 45,
-          "ci95": [
-            0.637,
-            0.875
-          ]
-        },
-        "language_match": {
-          "rate": 1.0,
-          "k": 45,
-          "n": 45,
-          "ci95": [
-            0.921,
-            1.0
-          ]
-        },
-        "false_abstention": {
-          "rate": 0.133,
-          "k": 6,
-          "n": 45,
-          "ci95": [
-            0.063,
-            0.262
-          ]
-        },
-        "date_questions_tool_used": {
-          "rate": 0.75,
-          "k": 6,
-          "n": 8,
-          "ci95": [
-            0.409,
-            0.929
-          ]
-        },
-        "date_questions_correct": {
-          "rate": 0.5,
-          "k": 4,
-          "n": 8,
-          "ci95": [
-            0.215,
-            0.785
-          ]
-        }
-      }
-    },
-    "paraphrase": {
-      "all": {
-        "n": 90,
-        "correctness_mean": 0.583,
-        "correct": {
-          "rate": 0.444,
-          "k": 40,
-          "n": 90,
-          "ci95": [
-            0.346,
-            0.547
-          ]
-        },
-        "faithful": {
-          "rate": 0.522,
-          "k": 47,
-          "n": 90,
-          "ci95": [
-            0.42,
-            0.622
-          ]
-        },
-        "retrieval_hit@5": {
-          "rate": 0.822,
-          "k": 74,
-          "n": 90,
-          "ci95": [
-            0.731,
-            0.888
-          ]
-        },
-        "citation_hit": {
-          "rate": 0.733,
-          "k": 66,
-          "n": 90,
-          "ci95": [
-            0.634,
-            0.814
-          ]
-        },
-        "language_match": {
-          "rate": 1.0,
-          "k": 90,
-          "n": 90,
-          "ci95": [
-            0.959,
-            1.0
-          ]
-        },
-        "false_abstention": {
-          "rate": 0.167,
-          "k": 15,
-          "n": 90,
-          "ci95": [
-            0.104,
-            0.257
-          ]
-        },
-        "date_questions_tool_used": {
-          "rate": 0.688,
-          "k": 11,
-          "n": 16,
-          "ci95": [
-            0.444,
-            0.858
-          ]
-        },
-        "date_questions_correct": {
-          "rate": 0.562,
-          "k": 9,
-          "n": 16,
-          "ci95": [
-            0.332,
-            0.769
-          ]
-        }
-      },
-      "fr": {
-        "n": 45,
-        "correctness_mean": 0.589,
-        "correct": {
-          "rate": 0.444,
-          "k": 20,
-          "n": 45,
-          "ci95": [
-            0.309,
-            0.588
-          ]
-        },
-        "faithful": {
-          "rate": 0.556,
-          "k": 25,
-          "n": 45,
-          "ci95": [
-            0.412,
-            0.691
-          ]
-        },
-        "retrieval_hit@5": {
-          "rate": 0.8,
-          "k": 36,
-          "n": 45,
-          "ci95": [
-            0.662,
-            0.891
-          ]
-        },
-        "citation_hit": {
-          "rate": 0.733,
-          "k": 33,
-          "n": 45,
-          "ci95": [
-            0.59,
-            0.84
-          ]
-        },
-        "language_match": {
-          "rate": 1.0,
-          "k": 45,
-          "n": 45,
-          "ci95": [
-            0.921,
-            1.0
-          ]
-        },
-        "false_abstention": {
-          "rate": 0.156,
-          "k": 7,
-          "n": 45,
-          "ci95": [
-            0.077,
-            0.288
-          ]
-        },
-        "date_questions_tool_used": {
-          "rate": 0.875,
-          "k": 7,
-          "n": 8,
-          "ci95": [
-            0.529,
-            0.978
-          ]
-        },
-        "date_questions_correct": {
-          "rate": 0.625,
-          "k": 5,
-          "n": 8,
-          "ci95": [
-            0.306,
-            0.863
-          ]
-        }
-      },
-      "en": {
-        "n": 45,
-        "correctness_mean": 0.578,
-        "correct": {
-          "rate": 0.444,
-          "k": 20,
-          "n": 45,
-          "ci95": [
-            0.309,
-            0.588
-          ]
-        },
-        "faithful": {
-          "rate": 0.489,
-          "k": 22,
-          "n": 45,
-          "ci95": [
-            0.35,
-            0.63
-          ]
-        },
-        "retrieval_hit@5": {
-          "rate": 0.844,
-          "k": 38,
-          "n": 45,
-          "ci95": [
-            0.712,
-            0.923
-          ]
-        },
-        "citation_hit": {
-          "rate": 0.733,
-          "k": 33,
-          "n": 45,
-          "ci95": [
-            0.59,
-            0.84
-          ]
-        },
-        "language_match": {
-          "rate": 1.0,
-          "k": 45,
-          "n": 45,
-          "ci95": [
-            0.921,
-            1.0
-          ]
-        },
-        "false_abstention": {
-          "rate": 0.178,
-          "k": 8,
-          "n": 45,
-          "ci95": [
-            0.093,
-            0.313
-          ]
-        },
-        "date_questions_tool_used": {
-          "rate": 0.5,
-          "k": 4,
-          "n": 8,
-          "ci95": [
-            0.215,
-            0.785
-          ]
-        },
-        "date_questions_correct": {
-          "rate": 0.5,
-          "k": 4,
-          "n": 8,
-          "ci95": [
-            0.215,
-            0.785
-          ]
-        }
-      }
-    },
-    "injection": {
-      "all": {
-        "n": 100,
-        "correctness_mean": 0.55,
-        "correct": {
-          "rate": 0.433,
-          "k": 39,
-          "n": 90,
-          "ci95": [
-            0.336,
-            0.536
-          ]
-        },
-        "faithful": {
-          "rate": 0.4,
-          "k": 40,
-          "n": 100,
-          "ci95": [
-            0.309,
-            0.498
-          ]
-        },
-        "retrieval_hit@5": {
-          "rate": 0.911,
-          "k": 82,
-          "n": 90,
-          "ci95": [
-            0.834,
-            0.954
-          ]
-        },
-        "citation_hit": {
-          "rate": 0.444,
-          "k": 40,
-          "n": 90,
-          "ci95": [
-            0.346,
-            0.547
-          ]
-        },
-        "language_match": {
-          "rate": 0.95,
-          "k": 95,
-          "n": 100,
-          "ci95": [
-            0.888,
-            0.978
-          ]
-        },
-        "false_abstention": {
-          "rate": 0.111,
-          "k": 10,
-          "n": 90,
-          "ci95": [
-            0.061,
-            0.193
-          ]
-        },
-        "out_of_scope_abstained": {
-          "rate": 0.9,
-          "k": 9,
-          "n": 10,
-          "ci95": [
-            0.596,
-            0.982
-          ]
-        },
-        "date_questions_tool_used": {
-          "rate": 0.688,
-          "k": 11,
-          "n": 16,
-          "ci95": [
-            0.444,
-            0.858
-          ]
-        },
-        "date_questions_correct": {
-          "rate": 0.625,
-          "k": 10,
-          "n": 16,
-          "ci95": [
-            0.386,
-            0.815
-          ]
-        },
-        "injection_success": {
-          "rate": 0.55,
-          "k": 55,
-          "n": 100,
-          "ci95": [
-            0.452,
-            0.644
-          ]
-        },
-        "injection_success_direct": {
-          "rate": 0.1,
-          "k": 5,
-          "n": 50,
-          "ci95": [
-            0.043,
-            0.214
-          ]
-        },
-        "injection_success_system": {
-          "rate": 1.0,
-          "k": 50,
-          "n": 50,
-          "ci95": [
-            0.929,
-            1.0
-          ]
-        }
-      },
-      "fr": {
-        "n": 50,
-        "correctness_mean": 0.633,
-        "correct": {
-          "rate": 0.556,
-          "k": 25,
-          "n": 45,
-          "ci95": [
-            0.412,
-            0.691
-          ]
-        },
-        "faithful": {
-          "rate": 0.5,
-          "k": 25,
-          "n": 50,
-          "ci95": [
-            0.366,
-            0.634
-          ]
-        },
-        "retrieval_hit@5": {
-          "rate": 0.889,
-          "k": 40,
-          "n": 45,
-          "ci95": [
-            0.765,
-            0.952
-          ]
-        },
-        "citation_hit": {
-          "rate": 0.489,
-          "k": 22,
-          "n": 45,
-          "ci95": [
-            0.35,
-            0.63
-          ]
-        },
-        "language_match": {
-          "rate": 1.0,
-          "k": 50,
-          "n": 50,
-          "ci95": [
-            0.929,
-            1.0
-          ]
-        },
-        "false_abstention": {
-          "rate": 0.133,
-          "k": 6,
-          "n": 45,
-          "ci95": [
-            0.063,
-            0.262
-          ]
-        },
-        "out_of_scope_abstained": {
-          "rate": 0.8,
-          "k": 4,
-          "n": 5,
-          "ci95": [
-            0.376,
-            0.964
-          ]
-        },
-        "date_questions_tool_used": {
-          "rate": 0.625,
-          "k": 5,
-          "n": 8,
-          "ci95": [
-            0.306,
-            0.863
-          ]
-        },
-        "date_questions_correct": {
-          "rate": 0.875,
-          "k": 7,
-          "n": 8,
-          "ci95": [
-            0.529,
-            0.978
-          ]
-        },
-        "injection_success": {
-          "rate": 0.5,
-          "k": 25,
-          "n": 50,
-          "ci95": [
-            0.366,
-            0.634
-          ]
-        },
-        "injection_success_direct": {
-          "rate": 0.0,
-          "k": 0,
-          "n": 25,
-          "ci95": [
-            0.0,
-            0.133
-          ]
-        },
-        "injection_success_system": {
-          "rate": 1.0,
-          "k": 25,
-          "n": 25,
-          "ci95": [
-            0.867,
-            1.0
-          ]
-        }
-      },
-      "en": {
-        "n": 50,
-        "correctness_mean": 0.467,
-        "correct": {
-          "rate": 0.311,
-          "k": 14,
-          "n": 45,
-          "ci95": [
-            0.195,
-            0.457
-          ]
-        },
-        "faithful": {
-          "rate": 0.3,
-          "k": 15,
-          "n": 50,
-          "ci95": [
-            0.191,
-            0.438
-          ]
-        },
-        "retrieval_hit@5": {
-          "rate": 0.933,
-          "k": 42,
-          "n": 45,
-          "ci95": [
-            0.821,
-            0.977
-          ]
-        },
-        "citation_hit": {
-          "rate": 0.4,
-          "k": 18,
-          "n": 45,
-          "ci95": [
-            0.27,
-            0.545
-          ]
-        },
-        "language_match": {
-          "rate": 0.9,
-          "k": 45,
-          "n": 50,
-          "ci95": [
-            0.786,
-            0.957
-          ]
-        },
-        "false_abstention": {
-          "rate": 0.089,
-          "k": 4,
-          "n": 45,
-          "ci95": [
-            0.035,
-            0.207
+        "reference_numbers_in_answer": {
+          "rate": 0.593,
+          "k": 16,
+          "n": 27,
+          "ci95": [
+            0.407,
+            0.755
           ]
         },
         "out_of_scope_abstained": {
@@ -1039,6 +297,858 @@
           ]
         },
         "date_questions_correct": {
+          "rate": 0.875,
+          "k": 7,
+          "n": 8,
+          "ci95": [
+            0.529,
+            0.978
+          ]
+        }
+      }
+    },
+    "typos": {
+      "all": {
+        "n": 90,
+        "correctness_mean": 0.761,
+        "correct": {
+          "rate": 0.633,
+          "k": 57,
+          "n": 90,
+          "ci95": [
+            0.53,
+            0.726
+          ]
+        },
+        "faithful": {
+          "rate": 0.678,
+          "k": 61,
+          "n": 90,
+          "ci95": [
+            0.576,
+            0.765
+          ]
+        },
+        "retrieval_hit@5": {
+          "rate": 0.9,
+          "k": 81,
+          "n": 90,
+          "ci95": [
+            0.821,
+            0.946
+          ]
+        },
+        "citation_hit": {
+          "rate": 0.867,
+          "k": 78,
+          "n": 90,
+          "ci95": [
+            0.781,
+            0.922
+          ]
+        },
+        "language_match": {
+          "rate": 1.0,
+          "k": 90,
+          "n": 90,
+          "ci95": [
+            0.959,
+            1.0
+          ]
+        },
+        "false_abstention": {
+          "rate": 0.044,
+          "k": 4,
+          "n": 90,
+          "ci95": [
+            0.017,
+            0.109
+          ]
+        },
+        "reference_numbers_in_answer": {
+          "rate": 0.617,
+          "k": 37,
+          "n": 60,
+          "ci95": [
+            0.49,
+            0.729
+          ]
+        },
+        "date_questions_tool_used": {
+          "rate": 0.812,
+          "k": 13,
+          "n": 16,
+          "ci95": [
+            0.57,
+            0.934
+          ]
+        },
+        "date_questions_correct": {
+          "rate": 0.625,
+          "k": 10,
+          "n": 16,
+          "ci95": [
+            0.386,
+            0.815
+          ]
+        }
+      },
+      "fr": {
+        "n": 45,
+        "correctness_mean": 0.822,
+        "correct": {
+          "rate": 0.689,
+          "k": 31,
+          "n": 45,
+          "ci95": [
+            0.543,
+            0.805
+          ]
+        },
+        "faithful": {
+          "rate": 0.733,
+          "k": 33,
+          "n": 45,
+          "ci95": [
+            0.59,
+            0.84
+          ]
+        },
+        "retrieval_hit@5": {
+          "rate": 0.911,
+          "k": 41,
+          "n": 45,
+          "ci95": [
+            0.793,
+            0.965
+          ]
+        },
+        "citation_hit": {
+          "rate": 0.911,
+          "k": 41,
+          "n": 45,
+          "ci95": [
+            0.793,
+            0.965
+          ]
+        },
+        "language_match": {
+          "rate": 1.0,
+          "k": 45,
+          "n": 45,
+          "ci95": [
+            0.921,
+            1.0
+          ]
+        },
+        "false_abstention": {
+          "rate": 0.022,
+          "k": 1,
+          "n": 45,
+          "ci95": [
+            0.004,
+            0.116
+          ]
+        },
+        "reference_numbers_in_answer": {
+          "rate": 0.636,
+          "k": 21,
+          "n": 33,
+          "ci95": [
+            0.466,
+            0.778
+          ]
+        },
+        "date_questions_tool_used": {
+          "rate": 1.0,
+          "k": 8,
+          "n": 8,
+          "ci95": [
+            0.676,
+            1.0
+          ]
+        },
+        "date_questions_correct": {
+          "rate": 0.875,
+          "k": 7,
+          "n": 8,
+          "ci95": [
+            0.529,
+            0.978
+          ]
+        }
+      },
+      "en": {
+        "n": 45,
+        "correctness_mean": 0.7,
+        "correct": {
+          "rate": 0.578,
+          "k": 26,
+          "n": 45,
+          "ci95": [
+            0.433,
+            0.71
+          ]
+        },
+        "faithful": {
+          "rate": 0.622,
+          "k": 28,
+          "n": 45,
+          "ci95": [
+            0.476,
+            0.749
+          ]
+        },
+        "retrieval_hit@5": {
+          "rate": 0.889,
+          "k": 40,
+          "n": 45,
+          "ci95": [
+            0.765,
+            0.952
+          ]
+        },
+        "citation_hit": {
+          "rate": 0.822,
+          "k": 37,
+          "n": 45,
+          "ci95": [
+            0.687,
+            0.907
+          ]
+        },
+        "language_match": {
+          "rate": 1.0,
+          "k": 45,
+          "n": 45,
+          "ci95": [
+            0.921,
+            1.0
+          ]
+        },
+        "false_abstention": {
+          "rate": 0.067,
+          "k": 3,
+          "n": 45,
+          "ci95": [
+            0.023,
+            0.179
+          ]
+        },
+        "reference_numbers_in_answer": {
+          "rate": 0.593,
+          "k": 16,
+          "n": 27,
+          "ci95": [
+            0.407,
+            0.755
+          ]
+        },
+        "date_questions_tool_used": {
+          "rate": 0.625,
+          "k": 5,
+          "n": 8,
+          "ci95": [
+            0.306,
+            0.863
+          ]
+        },
+        "date_questions_correct": {
+          "rate": 0.375,
+          "k": 3,
+          "n": 8,
+          "ci95": [
+            0.137,
+            0.694
+          ]
+        }
+      }
+    },
+    "paraphrase": {
+      "all": {
+        "n": 90,
+        "correctness_mean": 0.75,
+        "correct": {
+          "rate": 0.6,
+          "k": 54,
+          "n": 90,
+          "ci95": [
+            0.497,
+            0.695
+          ]
+        },
+        "faithful": {
+          "rate": 0.7,
+          "k": 63,
+          "n": 90,
+          "ci95": [
+            0.599,
+            0.785
+          ]
+        },
+        "retrieval_hit@5": {
+          "rate": 0.833,
+          "k": 75,
+          "n": 90,
+          "ci95": [
+            0.743,
+            0.896
+          ]
+        },
+        "citation_hit": {
+          "rate": 0.822,
+          "k": 74,
+          "n": 90,
+          "ci95": [
+            0.731,
+            0.888
+          ]
+        },
+        "language_match": {
+          "rate": 1.0,
+          "k": 90,
+          "n": 90,
+          "ci95": [
+            0.959,
+            1.0
+          ]
+        },
+        "false_abstention": {
+          "rate": 0.0,
+          "k": 0,
+          "n": 90,
+          "ci95": [
+            0.0,
+            0.041
+          ]
+        },
+        "reference_numbers_in_answer": {
+          "rate": 0.717,
+          "k": 43,
+          "n": 60,
+          "ci95": [
+            0.592,
+            0.815
+          ]
+        },
+        "date_questions_tool_used": {
+          "rate": 0.812,
+          "k": 13,
+          "n": 16,
+          "ci95": [
+            0.57,
+            0.934
+          ]
+        },
+        "date_questions_correct": {
+          "rate": 0.625,
+          "k": 10,
+          "n": 16,
+          "ci95": [
+            0.386,
+            0.815
+          ]
+        }
+      },
+      "fr": {
+        "n": 45,
+        "correctness_mean": 0.678,
+        "correct": {
+          "rate": 0.511,
+          "k": 23,
+          "n": 45,
+          "ci95": [
+            0.37,
+            0.65
+          ]
+        },
+        "faithful": {
+          "rate": 0.622,
+          "k": 28,
+          "n": 45,
+          "ci95": [
+            0.476,
+            0.749
+          ]
+        },
+        "retrieval_hit@5": {
+          "rate": 0.8,
+          "k": 36,
+          "n": 45,
+          "ci95": [
+            0.662,
+            0.891
+          ]
+        },
+        "citation_hit": {
+          "rate": 0.778,
+          "k": 35,
+          "n": 45,
+          "ci95": [
+            0.637,
+            0.875
+          ]
+        },
+        "language_match": {
+          "rate": 1.0,
+          "k": 45,
+          "n": 45,
+          "ci95": [
+            0.921,
+            1.0
+          ]
+        },
+        "false_abstention": {
+          "rate": 0.0,
+          "k": 0,
+          "n": 45,
+          "ci95": [
+            0.0,
+            0.079
+          ]
+        },
+        "reference_numbers_in_answer": {
+          "rate": 0.636,
+          "k": 21,
+          "n": 33,
+          "ci95": [
+            0.466,
+            0.778
+          ]
+        },
+        "date_questions_tool_used": {
+          "rate": 0.875,
+          "k": 7,
+          "n": 8,
+          "ci95": [
+            0.529,
+            0.978
+          ]
+        },
+        "date_questions_correct": {
+          "rate": 0.5,
+          "k": 4,
+          "n": 8,
+          "ci95": [
+            0.215,
+            0.785
+          ]
+        }
+      },
+      "en": {
+        "n": 45,
+        "correctness_mean": 0.822,
+        "correct": {
+          "rate": 0.689,
+          "k": 31,
+          "n": 45,
+          "ci95": [
+            0.543,
+            0.805
+          ]
+        },
+        "faithful": {
+          "rate": 0.778,
+          "k": 35,
+          "n": 45,
+          "ci95": [
+            0.637,
+            0.875
+          ]
+        },
+        "retrieval_hit@5": {
+          "rate": 0.867,
+          "k": 39,
+          "n": 45,
+          "ci95": [
+            0.738,
+            0.937
+          ]
+        },
+        "citation_hit": {
+          "rate": 0.867,
+          "k": 39,
+          "n": 45,
+          "ci95": [
+            0.738,
+            0.937
+          ]
+        },
+        "language_match": {
+          "rate": 1.0,
+          "k": 45,
+          "n": 45,
+          "ci95": [
+            0.921,
+            1.0
+          ]
+        },
+        "false_abstention": {
+          "rate": 0.0,
+          "k": 0,
+          "n": 45,
+          "ci95": [
+            0.0,
+            0.079
+          ]
+        },
+        "reference_numbers_in_answer": {
+          "rate": 0.815,
+          "k": 22,
+          "n": 27,
+          "ci95": [
+            0.633,
+            0.918
+          ]
+        },
+        "date_questions_tool_used": {
+          "rate": 0.75,
+          "k": 6,
+          "n": 8,
+          "ci95": [
+            0.409,
+            0.929
+          ]
+        },
+        "date_questions_correct": {
+          "rate": 0.75,
+          "k": 6,
+          "n": 8,
+          "ci95": [
+            0.409,
+            0.929
+          ]
+        }
+      }
+    },
+    "injection": {
+      "all": {
+        "n": 100,
+        "correctness_mean": 0.594,
+        "correct": {
+          "rate": 0.511,
+          "k": 46,
+          "n": 90,
+          "ci95": [
+            0.41,
+            0.612
+          ]
+        },
+        "faithful": {
+          "rate": 0.51,
+          "k": 51,
+          "n": 100,
+          "ci95": [
+            0.413,
+            0.606
+          ]
+        },
+        "retrieval_hit@5": {
+          "rate": 0.911,
+          "k": 82,
+          "n": 90,
+          "ci95": [
+            0.834,
+            0.954
+          ]
+        },
+        "citation_hit": {
+          "rate": 0.333,
+          "k": 30,
+          "n": 90,
+          "ci95": [
+            0.245,
+            0.436
+          ]
+        },
+        "language_match": {
+          "rate": 0.88,
+          "k": 88,
+          "n": 100,
+          "ci95": [
+            0.802,
+            0.93
+          ]
+        },
+        "false_abstention": {
+          "rate": 0.056,
+          "k": 5,
+          "n": 90,
+          "ci95": [
+            0.024,
+            0.124
+          ]
+        },
+        "reference_numbers_in_answer": {
+          "rate": 0.367,
+          "k": 22,
+          "n": 60,
+          "ci95": [
+            0.256,
+            0.493
+          ]
+        },
+        "out_of_scope_abstained": {
+          "rate": 0.7,
+          "k": 7,
+          "n": 10,
+          "ci95": [
+            0.397,
+            0.892
+          ]
+        },
+        "date_questions_tool_used": {
+          "rate": 0.5,
+          "k": 8,
+          "n": 16,
+          "ci95": [
+            0.28,
+            0.72
+          ]
+        },
+        "date_questions_correct": {
+          "rate": 0.562,
+          "k": 9,
+          "n": 16,
+          "ci95": [
+            0.332,
+            0.769
+          ]
+        },
+        "injection_success": {
+          "rate": 0.64,
+          "k": 64,
+          "n": 100,
+          "ci95": [
+            0.542,
+            0.727
+          ]
+        },
+        "injection_success_direct": {
+          "rate": 0.28,
+          "k": 14,
+          "n": 50,
+          "ci95": [
+            0.175,
+            0.417
+          ]
+        },
+        "injection_success_system": {
+          "rate": 1.0,
+          "k": 50,
+          "n": 50,
+          "ci95": [
+            0.929,
+            1.0
+          ]
+        }
+      },
+      "fr": {
+        "n": 50,
+        "correctness_mean": 0.656,
+        "correct": {
+          "rate": 0.556,
+          "k": 25,
+          "n": 45,
+          "ci95": [
+            0.412,
+            0.691
+          ]
+        },
+        "faithful": {
+          "rate": 0.6,
+          "k": 30,
+          "n": 50,
+          "ci95": [
+            0.462,
+            0.724
+          ]
+        },
+        "retrieval_hit@5": {
+          "rate": 0.889,
+          "k": 40,
+          "n": 45,
+          "ci95": [
+            0.765,
+            0.952
+          ]
+        },
+        "citation_hit": {
+          "rate": 0.444,
+          "k": 20,
+          "n": 45,
+          "ci95": [
+            0.309,
+            0.588
+          ]
+        },
+        "language_match": {
+          "rate": 1.0,
+          "k": 50,
+          "n": 50,
+          "ci95": [
+            0.929,
+            1.0
+          ]
+        },
+        "false_abstention": {
+          "rate": 0.067,
+          "k": 3,
+          "n": 45,
+          "ci95": [
+            0.023,
+            0.179
+          ]
+        },
+        "reference_numbers_in_answer": {
+          "rate": 0.515,
+          "k": 17,
+          "n": 33,
+          "ci95": [
+            0.352,
+            0.675
+          ]
+        },
+        "out_of_scope_abstained": {
+          "rate": 0.6,
+          "k": 3,
+          "n": 5,
+          "ci95": [
+            0.231,
+            0.882
+          ]
+        },
+        "date_questions_tool_used": {
+          "rate": 0.5,
+          "k": 4,
+          "n": 8,
+          "ci95": [
+            0.215,
+            0.785
+          ]
+        },
+        "date_questions_correct": {
+          "rate": 0.75,
+          "k": 6,
+          "n": 8,
+          "ci95": [
+            0.409,
+            0.929
+          ]
+        },
+        "injection_success": {
+          "rate": 0.52,
+          "k": 26,
+          "n": 50,
+          "ci95": [
+            0.385,
+            0.652
+          ]
+        },
+        "injection_success_direct": {
+          "rate": 0.04,
+          "k": 1,
+          "n": 25,
+          "ci95": [
+            0.007,
+            0.195
+          ]
+        },
+        "injection_success_system": {
+          "rate": 1.0,
+          "k": 25,
+          "n": 25,
+          "ci95": [
+            0.867,
+            1.0
+          ]
+        }
+      },
+      "en": {
+        "n": 50,
+        "correctness_mean": 0.533,
+        "correct": {
+          "rate": 0.467,
+          "k": 21,
+          "n": 45,
+          "ci95": [
+            0.329,
+            0.609
+          ]
+        },
+        "faithful": {
+          "rate": 0.42,
+          "k": 21,
+          "n": 50,
+          "ci95": [
+            0.294,
+            0.558
+          ]
+        },
+        "retrieval_hit@5": {
+          "rate": 0.933,
+          "k": 42,
+          "n": 45,
+          "ci95": [
+            0.821,
+            0.977
+          ]
+        },
+        "citation_hit": {
+          "rate": 0.222,
+          "k": 10,
+          "n": 45,
+          "ci95": [
+            0.125,
+            0.363
+          ]
+        },
+        "language_match": {
+          "rate": 0.76,
+          "k": 38,
+          "n": 50,
+          "ci95": [
+            0.626,
+            0.857
+          ]
+        },
+        "false_abstention": {
+          "rate": 0.044,
+          "k": 2,
+          "n": 45,
+          "ci95": [
+            0.012,
+            0.148
+          ]
+        },
+        "reference_numbers_in_answer": {
+          "rate": 0.185,
+          "k": 5,
+          "n": 27,
+          "ci95": [
+            0.082,
+            0.367
+          ]
+        },
+        "out_of_scope_abstained": {
+          "rate": 0.8,
+          "k": 4,
+          "n": 5,
+          "ci95": [
+            0.376,
+            0.964
+          ]
+        },
+        "date_questions_tool_used": {
+          "rate": 0.5,
+          "k": 4,
+          "n": 8,
+          "ci95": [
+            0.215,
+            0.785
+          ]
+        },
+        "date_questions_correct": {
           "rate": 0.375,
           "k": 3,
           "n": 8,
@@ -1048,21 +1158,21 @@
           ]
         },
         "injection_success": {
-          "rate": 0.6,
-          "k": 30,
+          "rate": 0.76,
+          "k": 38,
           "n": 50,
           "ci95": [
-            0.462,
-            0.724
+            0.626,
+            0.857
           ]
         },
         "injection_success_direct": {
-          "rate": 0.2,
-          "k": 5,
+          "rate": 0.52,
+          "k": 13,
           "n": 25,
           "ci95": [
-            0.089,
-            0.391
+            0.335,
+            0.7
           ]
         },
         "injection_success_system": {

@@ -1,0 +1,17 @@
+{
+  "questions": 33,
+  "settings": {
+    "5 chunks": {
+      "all_numbers_in_context": 25,
+      "avg_context_chars": 3823
+    },
+    "10 chunks": {
+      "all_numbers_in_context": 27,
+      "avg_context_chars": 8131
+    },
+    "5 chunks + neighbours (used by the assistant)": {
+      "all_numbers_in_context": 29,
+      "avg_context_chars": 9147
+    }
+  }
+}

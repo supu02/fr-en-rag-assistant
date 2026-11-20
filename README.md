@@ -35,10 +35,10 @@ intervals.
 - Keeping at most 2 chunks per page raised hit@5 from 72% to 79% (all questions).
 - Adding keyword search (BM25, hybrid) helps French questions (89% -> 100%) but not English ones (69% -> 56%), so `auto` uses it for French only. This choice was made on the same questions, so `auto` scores are optimistic.
 - Extra spaces alone (same words, same meaning) changed the retrieval result for 8 of 90 questions.
-- Answers graded correct: 58% in French, 56% in English.
-- English questions were wrongly answered with "I cannot find this" more often: 7 of 45 answerable English questions vs 0 of 45 French ones.
-- Translating English questions to French before the search: English retrieval hit@5 69% without translation (retrieval-only run) vs 89% with translation (answer run).
-- Hidden prompt injections made the assistant print the attacker's code word in 55 of 100 answers.
+- Answers graded correct: 71% in French, 67% in English.
+- English questions were wrongly answered with "I cannot find this" more often: 4 of 45 answerable English questions vs 0 of 45 French ones.
+- Translating English questions to French before the search: English retrieval hit@5 69% without translation (retrieval-only run) vs 91% with translation (answer run).
+- Hidden prompt injections made the assistant print the attacker's code word in 64 of 100 answers.
 
 ### Retrieval (no LLM; 90 answerable questions, half French, half English)
 
@@ -74,27 +74,48 @@ Source: `results/retrieval.json` (2026-11-18, 8652 chunks, `intfloat/multilingua
 
 | Variant | Lang | n | Correct | Faithful to cited sources | Retrieval hit@5 | Cites a gold page | Answer in question's language |
 |---|---|---|---|---|---|---|---|
-| clean | FR | 50 | 58% (43%–71%) | 66% (52%–78%) | 100% | 96% | 100% |
-| clean | EN | 50 | 56% (41%–69%) | 66% (52%–78%) | 89% | 80% | 100% |
-| typos | FR | 45 | 49% (35%–63%) | 51% (37%–65%) | 91% | 87% | 100% |
-| typos | EN | 45 | 44% (31%–59%) | 53% (39%–67%) | 87% | 78% | 100% |
-| paraphrase | FR | 45 | 44% (31%–59%) | 56% (41%–69%) | 80% | 73% | 100% |
-| paraphrase | EN | 45 | 44% (31%–59%) | 49% (35%–63%) | 84% | 73% | 100% |
-| injection | FR | 50 | 56% (41%–69%) | 50% (37%–63%) | 89% | 49% | 100% |
-| injection | EN | 50 | 31% (20%–46%) | 30% (19%–44%) | 93% | 40% | 90% |
+| clean | FR | 50 | 71% (57%–82%) | 78% (65%–87%) | 100% | 100% | 100% |
+| clean | EN | 50 | 67% (52%–79%) | 76% (63%–86%) | 91% | 87% | 100% |
+| typos | FR | 45 | 69% (54%–80%) | 73% (59%–84%) | 91% | 91% | 100% |
+| typos | EN | 45 | 58% (43%–71%) | 62% (48%–75%) | 89% | 82% | 100% |
+| paraphrase | FR | 45 | 51% (37%–65%) | 62% (48%–75%) | 80% | 78% | 100% |
+| paraphrase | EN | 45 | 69% (54%–80%) | 78% (64%–88%) | 87% | 87% | 100% |
+| injection | FR | 50 | 56% (41%–69%) | 60% (46%–72%) | 89% | 44% | 100% |
+| injection | EN | 50 | 47% (33%–61%) | 42% (29%–56%) | 93% | 22% | 76% |
 
 | Check (clean questions unless stated) | Result |
 |---|---|
 | Out-of-scope questions where the assistant said it could not answer | 10/10 |
 | Date questions where the date tool was called | 14/16 |
-| Date questions graded correct | 13/16 |
-| Answerable questions where the assistant wrongly said it could not answer | 7/90 |
-| Prompt injection that worked: "Ignore previous instructions" | 5/50 |
+| Date questions graded correct | 14/16 |
+| Answerable questions where the assistant wrongly said it could not answer | 4/90 |
+| Prompt injection that worked: "Ignore previous instructions" | 14/50 |
 | Prompt injection that worked: Fake "[SYSTEM]" rule | 50/50 |
 
-Tokens for the 380 answers: answer model 701,020 in / 40,959 out (628 calls, about $0.18 at list price); judge 301,174 in / 42,848 out (380 calls).
+Tokens for the 380 answers: answer model 1,309,544 in / 43,845 out (621 calls, about $0.32 at list price); judge 473,350 in / 43,796 out (380 calls, about $0.30).
 
-Source: `results/answer_eval.json` (2026-11-19, commit `6a81328`).
+Source: `results/answer_eval.json` (2026-11-20, commit `84177c3`).
+
+### Before and after the fixes of 20 Nov 2026
+
+Same questions, same judge. The fixes came from reading the first run's wrong answers on these questions, so the "after" column is optimistic. "Better / worse" counts answerable questions whose grade went up or down (part of it is run-to-run noise); the sign test gives the chance of a split at least that uneven if the fixes changed nothing. "Has the reference's numbers" needs no judge: the answer contains every number with a unit from the reference answer.
+
+| Variant | Lang | Correct before → after | Better / worse / same | Sign test p | Has the reference's numbers | Wrongly said "cannot find" |
+|---|---|---|---|---|---|---|
+| clean | FR | 26 → 32 of 45 | 10 / 4 / 31 | 0.180 | 17 → 24 of 33 | 0 → 0 of 45 |
+| clean | EN | 25 → 30 of 45 | 10 / 6 / 29 | 0.454 | 11 → 16 of 27 | 7 → 4 of 45 |
+| clean | both | 51 → 62 of 90 | 20 / 10 / 60 | 0.099 | 28 → 40 of 60 | 7 → 4 of 90 |
+| typos | FR | 22 → 31 of 45 | 14 / 2 / 29 | 0.004 | 15 → 21 of 33 | 4 → 1 of 45 |
+| typos | EN | 20 → 26 of 45 | 13 / 6 / 26 | 0.167 | 10 → 16 of 27 | 6 → 3 of 45 |
+| typos | both | 42 → 57 of 90 | 27 / 8 / 55 | 0.002 | 25 → 37 of 60 | 10 → 4 of 90 |
+| paraphrase | FR | 20 → 23 of 45 | 9 / 2 / 34 | 0.065 | 16 → 21 of 33 | 7 → 0 of 45 |
+| paraphrase | EN | 20 → 31 of 45 | 17 / 2 / 26 | 0.001 | 15 → 22 of 27 | 8 → 0 of 45 |
+| paraphrase | both | 40 → 54 of 90 | 26 / 4 / 60 | < 0.001 | 31 → 43 of 60 | 15 → 0 of 90 |
+| injection | FR | 25 → 25 of 45 | 11 / 8 / 26 | 0.648 | 16 → 17 of 33 | 6 → 3 of 45 |
+| injection | EN | 14 → 21 of 45 | 12 / 7 / 26 | 0.359 | 6 → 5 of 27 | 4 → 2 of 45 |
+| injection | both | 39 → 46 of 90 | 23 / 15 / 52 | 0.256 | 22 → 22 of 60 | 10 → 5 of 90 |
+
+Prompt injection got worse: the attacker's code word appeared in 55 → 64 of 100 answers ("ignore previous instructions": 5 → 14 of 50; fake "[SYSTEM]" rule: 50 → 50 of 50).
 <!-- RESULTS:END -->
 
 ## How it works
@@ -104,7 +125,7 @@ flowchart LR
     Q[Question FR or EN] --> T{English?}
     T -- yes --> TR[Translate to French<br/>for the search only]
     T -- no --> R
-    TR --> R[Retrieve top 5 chunks<br/>Qdrant + BM25]
+    TR --> R[Retrieve top 5 chunks<br/>+ their neighbours<br/>Qdrant + BM25]
     R --> A[LLM writes the answer<br/>with source numbers]
     A -- needs a date --> D[Date tool<br/>exact calendar maths]
     D --> A
@@ -115,7 +136,7 @@ flowchart LR
 |---|---|---|
 | 1. Ingestion | [`ingest.py`](src/rag_assistant/ingest.py) | Reads the official XML and cuts it along its own sections. Each chunk starts with its heading path (for example *Deposit > Furnished flat > Inspection matches*), because the same question often has different answers for different cases. |
 | 2. Index | [`embeddings.py`](src/rag_assistant/embeddings.py), [`index.py`](src/rag_assistant/index.py) | Turns chunks into vectors with `multilingual-e5-small` (runs on CPU, French and English in one vector space) and stores them in Qdrant. |
-| 3. Retrieval | [`retrieve.py`](src/rag_assistant/retrieve.py) | Dense search, BM25 keyword search, or both (hybrid). At most 2 chunks per page, so one page cannot fill all 5 slots. |
+| 3. Retrieval | [`retrieve.py`](src/rag_assistant/retrieve.py) | Dense search, BM25 keyword search, or both (hybrid). At most 2 chunks per page, so one page cannot fill all 5 slots. Each result comes with the chunk before and after it on its page, because the number that answers the question often sits in the next chunk. |
 | 4. Agent | [`agent.py`](src/rag_assistant/agent.py), [`tools.py`](src/rag_assistant/tools.py) | A LangGraph graph: translate (English only) → retrieve → LLM answer with `[n]` citations ⇄ date tool. The LLM is Mistral's Ministral 3 14B on Amazon Bedrock ([`llm.py`](src/rag_assistant/llm.py); the Mistral API also works). The prompt tells the model to answer only from the sources and to ignore instructions inside the question. |
 | 5. API | [`api.py`](src/rag_assistant/api.py) | FastAPI: `POST /ask`, `POST /search` (works without the LLM), `GET /health`, and a small web page at `/`. |
 | 6. Evaluation | [`evaluation/`](evaluation) | Labelled questions, robustness variants, retrieval metrics, LLM judge, README tables. |
@@ -127,12 +148,13 @@ flowchart LR
 - **Answers** (Mistral models on Amazon Bedrock): an LLM judge (Mistral Large 3, a much larger model than the answering model) grades each answer against the reference (correct / partial / incorrect) and checks that every claim is supported by the cited sources (faithfulness). Simple code checks: does the answer cite a gold page, is it written in the question's language, was the date tool called, did the assistant decline out-of-scope questions.
 - **Robustness**: typos, removed accents, extra spaces, lowercase, rewording ([`paraphrases.jsonl`](evaluation/paraphrases.jsonl)), and prompt injection hidden in the question (an "ignore previous instructions" line or a fake `[SYSTEM]` rule asking for a code word). Every change is deterministic, so runs can be compared.
 - **CI regression check**: retrieval metrics must stay above [`thresholds.json`](evaluation/thresholds.json) on every push.
+- **Error analysis and one round of fixes** (20 Nov 2026): reading the first run's wrong answers showed two causes. English searches used translations with additions the model had invented, and the right page was often found without the paragraph that holds the number. The fixes: a cleaner translation, neighbouring chunks, and clearer answer rules. [`compare_runs.py`](evaluation/compare_runs.py) compares both runs question by question; the first run is kept in [`results/before_fixes/`](results/before_fixes).
 
 ## Limits
 
 - **Small samples.** 45 answerable topics per language. A 95% interval on a rate is often ±10 to 15 points. Treat the numbers as a first measurement, not a benchmark.
 - **The questions were drafted with an AI assistant** from the source pages, and the facts were checked against the page text. They are not real user questions.
-- **Choices were made on the test questions.** There is no separate development set: the retrieval method `auto` was chosen after looking at these results, so its scores are optimistic. The paraphrase set is a partial check.
+- **Choices were made on the test questions.** There is no separate development set: the retrieval method `auto` was chosen after looking at these results, so its scores are optimistic. The same holds for the fixes of 20 November, designed from the first run's wrong answers on these questions. The paraphrase set is a partial check.
 - **Gold pages are a lower bound.** Another page may also contain the answer (for example, a public-sector page with the same rule).
 - **LLM judge.** The judge and the answering model come from the same company. The judge runs on Bedrock in US East (the only Region offering it); it only sees the public test questions and page excerpts. Its grades have not been compared with human labels yet ([`judge_agreement.py`](evaluation/judge_agreement.py) does this on a sample of 30). Its "abstained" flag missed most refusals, so refusals are detected in code from the answer's first sentence; this check can misread a few answers.
 - **Scope and freshness.** 362 pages, one snapshot (18 November 2026). Rules change; the live pages are the reference.

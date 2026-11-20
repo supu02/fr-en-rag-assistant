@@ -1,0 +1,1324 @@
+{
+  "clean": {
+    "fr": {
+      "before": {
+        "correct": {
+          "rate": 0.578,
+          "k": 26,
+          "n": 45,
+          "ci95": [
+            0.433,
+            0.71
+          ]
+        },
+        "faithful": {
+          "rate": 0.66,
+          "k": 33,
+          "n": 50,
+          "ci95": [
+            0.522,
+            0.776
+          ]
+        },
+        "false_abstention": {
+          "rate": 0.0,
+          "k": 0,
+          "n": 45,
+          "ci95": [
+            0.0,
+            0.079
+          ]
+        },
+        "reference_numbers_in_answer": {
+          "rate": 0.515,
+          "k": 17,
+          "n": 33,
+          "ci95": [
+            0.352,
+            0.675
+          ]
+        },
+        "out_of_scope_abstained": {
+          "rate": 1.0,
+          "k": 5,
+          "n": 5,
+          "ci95": [
+            0.566,
+            1.0
+          ]
+        },
+        "correctness_mean": 0.756
+      },
+      "after": {
+        "correct": {
+          "rate": 0.711,
+          "k": 32,
+          "n": 45,
+          "ci95": [
+            0.566,
+            0.823
+          ]
+        },
+        "faithful": {
+          "rate": 0.78,
+          "k": 39,
+          "n": 50,
+          "ci95": [
+            0.648,
+            0.872
+          ]
+        },
+        "false_abstention": {
+          "rate": 0.0,
+          "k": 0,
+          "n": 45,
+          "ci95": [
+            0.0,
+            0.079
+          ]
+        },
+        "reference_numbers_in_answer": {
+          "rate": 0.727,
+          "k": 24,
+          "n": 33,
+          "ci95": [
+            0.558,
+            0.849
+          ]
+        },
+        "out_of_scope_abstained": {
+          "rate": 1.0,
+          "k": 5,
+          "n": 5,
+          "ci95": [
+            0.566,
+            1.0
+          ]
+        },
+        "correctness_mean": 0.833
+      },
+      "paired": {
+        "n": 45,
+        "better": 10,
+        "worse": 4,
+        "same": 31,
+        "sign_test_p": 0.18
+      }
+    },
+    "en": {
+      "before": {
+        "correct": {
+          "rate": 0.556,
+          "k": 25,
+          "n": 45,
+          "ci95": [
+            0.412,
+            0.691
+          ]
+        },
+        "faithful": {
+          "rate": 0.66,
+          "k": 33,
+          "n": 50,
+          "ci95": [
+            0.522,
+            0.776
+          ]
+        },
+        "false_abstention": {
+          "rate": 0.156,
+          "k": 7,
+          "n": 45,
+          "ci95": [
+            0.077,
+            0.288
+          ]
+        },
+        "reference_numbers_in_answer": {
+          "rate": 0.407,
+          "k": 11,
+          "n": 27,
+          "ci95": [
+            0.245,
+            0.593
+          ]
+        },
+        "out_of_scope_abstained": {
+          "rate": 1.0,
+          "k": 5,
+          "n": 5,
+          "ci95": [
+            0.566,
+            1.0
+          ]
+        },
+        "correctness_mean": 0.667
+      },
+      "after": {
+        "correct": {
+          "rate": 0.667,
+          "k": 30,
+          "n": 45,
+          "ci95": [
+            0.521,
+            0.786
+          ]
+        },
+        "faithful": {
+          "rate": 0.76,
+          "k": 38,
+          "n": 50,
+          "ci95": [
+            0.626,
+            0.857
+          ]
+        },
+        "false_abstention": {
+          "rate": 0.089,
+          "k": 4,
+          "n": 45,
+          "ci95": [
+            0.035,
+            0.207
+          ]
+        },
+        "reference_numbers_in_answer": {
+          "rate": 0.593,
+          "k": 16,
+          "n": 27,
+          "ci95": [
+            0.407,
+            0.755
+          ]
+        },
+        "out_of_scope_abstained": {
+          "rate": 1.0,
+          "k": 5,
+          "n": 5,
+          "ci95": [
+            0.566,
+            1.0
+          ]
+        },
+        "correctness_mean": 0.744
+      },
+      "paired": {
+        "n": 45,
+        "better": 10,
+        "worse": 6,
+        "same": 29,
+        "sign_test_p": 0.454
+      }
+    },
+    "all": {
+      "before": {
+        "correct": {
+          "rate": 0.567,
+          "k": 51,
+          "n": 90,
+          "ci95": [
+            0.464,
+            0.664
+          ]
+        },
+        "faithful": {
+          "rate": 0.66,
+          "k": 66,
+          "n": 100,
+          "ci95": [
+            0.563,
+            0.745
+          ]
+        },
+        "false_abstention": {
+          "rate": 0.078,
+          "k": 7,
+          "n": 90,
+          "ci95": [
+            0.038,
+            0.152
+          ]
+        },
+        "reference_numbers_in_answer": {
+          "rate": 0.467,
+          "k": 28,
+          "n": 60,
+          "ci95": [
+            0.346,
+            0.591
+          ]
+        },
+        "out_of_scope_abstained": {
+          "rate": 1.0,
+          "k": 10,
+          "n": 10,
+          "ci95": [
+            0.722,
+            1.0
+          ]
+        },
+        "correctness_mean": 0.711
+      },
+      "after": {
+        "correct": {
+          "rate": 0.689,
+          "k": 62,
+          "n": 90,
+          "ci95": [
+            0.587,
+            0.775
+          ]
+        },
+        "faithful": {
+          "rate": 0.77,
+          "k": 77,
+          "n": 100,
+          "ci95": [
+            0.678,
+            0.842
+          ]
+        },
+        "false_abstention": {
+          "rate": 0.044,
+          "k": 4,
+          "n": 90,
+          "ci95": [
+            0.017,
+            0.109
+          ]
+        },
+        "reference_numbers_in_answer": {
+          "rate": 0.667,
+          "k": 40,
+          "n": 60,
+          "ci95": [
+            0.541,
+            0.773
+          ]
+        },
+        "out_of_scope_abstained": {
+          "rate": 1.0,
+          "k": 10,
+          "n": 10,
+          "ci95": [
+            0.722,
+            1.0
+          ]
+        },
+        "correctness_mean": 0.789
+      },
+      "paired": {
+        "n": 90,
+        "better": 20,
+        "worse": 10,
+        "same": 60,
+        "sign_test_p": 0.099
+      }
+    }
+  },
+  "typos": {
+    "fr": {
+      "before": {
+        "correct": {
+          "rate": 0.489,
+          "k": 22,
+          "n": 45,
+          "ci95": [
+            0.35,
+            0.63
+          ]
+        },
+        "faithful": {
+          "rate": 0.511,
+          "k": 23,
+          "n": 45,
+          "ci95": [
+            0.37,
+            0.65
+          ]
+        },
+        "false_abstention": {
+          "rate": 0.089,
+          "k": 4,
+          "n": 45,
+          "ci95": [
+            0.035,
+            0.207
+          ]
+        },
+        "reference_numbers_in_answer": {
+          "rate": 0.455,
+          "k": 15,
+          "n": 33,
+          "ci95": [
+            0.298,
+            0.62
+          ]
+        },
+        "correctness_mean": 0.678
+      },
+      "after": {
+        "correct": {
+          "rate": 0.689,
+          "k": 31,
+          "n": 45,
+          "ci95": [
+            0.543,
+            0.805
+          ]
+        },
+        "faithful": {
+          "rate": 0.733,
+          "k": 33,
+          "n": 45,
+          "ci95": [
+            0.59,
+            0.84
+          ]
+        },
+        "false_abstention": {
+          "rate": 0.022,
+          "k": 1,
+          "n": 45,
+          "ci95": [
+            0.004,
+            0.116
+          ]
+        },
+        "reference_numbers_in_answer": {
+          "rate": 0.636,
+          "k": 21,
+          "n": 33,
+          "ci95": [
+            0.466,
+            0.778
+          ]
+        },
+        "correctness_mean": 0.822
+      },
+      "paired": {
+        "n": 45,
+        "better": 14,
+        "worse": 2,
+        "same": 29,
+        "sign_test_p": 0.004
+      }
+    },
+    "en": {
+      "before": {
+        "correct": {
+          "rate": 0.444,
+          "k": 20,
+          "n": 45,
+          "ci95": [
+            0.309,
+            0.588
+          ]
+        },
+        "faithful": {
+          "rate": 0.533,
+          "k": 24,
+          "n": 45,
+          "ci95": [
+            0.391,
+            0.671
+          ]
+        },
+        "false_abstention": {
+          "rate": 0.133,
+          "k": 6,
+          "n": 45,
+          "ci95": [
+            0.063,
+            0.262
+          ]
+        },
+        "reference_numbers_in_answer": {
+          "rate": 0.37,
+          "k": 10,
+          "n": 27,
+          "ci95": [
+            0.215,
+            0.558
+          ]
+        },
+        "correctness_mean": 0.611
+      },
+      "after": {
+        "correct": {
+          "rate": 0.578,
+          "k": 26,
+          "n": 45,
+          "ci95": [
+            0.433,
+            0.71
+          ]
+        },
+        "faithful": {
+          "rate": 0.622,
+          "k": 28,
+          "n": 45,
+          "ci95": [
+            0.476,
+            0.749
+          ]
+        },
+        "false_abstention": {
+          "rate": 0.067,
+          "k": 3,
+          "n": 45,
+          "ci95": [
+            0.023,
+            0.179
+          ]
+        },
+        "reference_numbers_in_answer": {
+          "rate": 0.593,
+          "k": 16,
+          "n": 27,
+          "ci95": [
+            0.407,
+            0.755
+          ]
+        },
+        "correctness_mean": 0.7
+      },
+      "paired": {
+        "n": 45,
+        "better": 13,
+        "worse": 6,
+        "same": 26,
+        "sign_test_p": 0.167
+      }
+    },
+    "all": {
+      "before": {
+        "correct": {
+          "rate": 0.467,
+          "k": 42,
+          "n": 90,
+          "ci95": [
+            0.367,
+            0.569
+          ]
+        },
+        "faithful": {
+          "rate": 0.522,
+          "k": 47,
+          "n": 90,
+          "ci95": [
+            0.42,
+            0.622
+          ]
+        },
+        "false_abstention": {
+          "rate": 0.111,
+          "k": 10,
+          "n": 90,
+          "ci95": [
+            0.061,
+            0.193
+          ]
+        },
+        "reference_numbers_in_answer": {
+          "rate": 0.417,
+          "k": 25,
+          "n": 60,
+          "ci95": [
+            0.301,
+            0.543
+          ]
+        },
+        "correctness_mean": 0.644
+      },
+      "after": {
+        "correct": {
+          "rate": 0.633,
+          "k": 57,
+          "n": 90,
+          "ci95": [
+            0.53,
+            0.726
+          ]
+        },
+        "faithful": {
+          "rate": 0.678,
+          "k": 61,
+          "n": 90,
+          "ci95": [
+            0.576,
+            0.765
+          ]
+        },
+        "false_abstention": {
+          "rate": 0.044,
+          "k": 4,
+          "n": 90,
+          "ci95": [
+            0.017,
+            0.109
+          ]
+        },
+        "reference_numbers_in_answer": {
+          "rate": 0.617,
+          "k": 37,
+          "n": 60,
+          "ci95": [
+            0.49,
+            0.729
+          ]
+        },
+        "correctness_mean": 0.761
+      },
+      "paired": {
+        "n": 90,
+        "better": 27,
+        "worse": 8,
+        "same": 55,
+        "sign_test_p": 0.002
+      }
+    }
+  },
+  "paraphrase": {
+    "fr": {
+      "before": {
+        "correct": {
+          "rate": 0.444,
+          "k": 20,
+          "n": 45,
+          "ci95": [
+            0.309,
+            0.588
+          ]
+        },
+        "faithful": {
+          "rate": 0.556,
+          "k": 25,
+          "n": 45,
+          "ci95": [
+            0.412,
+            0.691
+          ]
+        },
+        "false_abstention": {
+          "rate": 0.156,
+          "k": 7,
+          "n": 45,
+          "ci95": [
+            0.077,
+            0.288
+          ]
+        },
+        "reference_numbers_in_answer": {
+          "rate": 0.485,
+          "k": 16,
+          "n": 33,
+          "ci95": [
+            0.325,
+            0.648
+          ]
+        },
+        "correctness_mean": 0.589
+      },
+      "after": {
+        "correct": {
+          "rate": 0.511,
+          "k": 23,
+          "n": 45,
+          "ci95": [
+            0.37,
+            0.65
+          ]
+        },
+        "faithful": {
+          "rate": 0.622,
+          "k": 28,
+          "n": 45,
+          "ci95": [
+            0.476,
+            0.749
+          ]
+        },
+        "false_abstention": {
+          "rate": 0.0,
+          "k": 0,
+          "n": 45,
+          "ci95": [
+            0.0,
+            0.079
+          ]
+        },
+        "reference_numbers_in_answer": {
+          "rate": 0.636,
+          "k": 21,
+          "n": 33,
+          "ci95": [
+            0.466,
+            0.778
+          ]
+        },
+        "correctness_mean": 0.678
+      },
+      "paired": {
+        "n": 45,
+        "better": 9,
+        "worse": 2,
+        "same": 34,
+        "sign_test_p": 0.065
+      }
+    },
+    "en": {
+      "before": {
+        "correct": {
+          "rate": 0.444,
+          "k": 20,
+          "n": 45,
+          "ci95": [
+            0.309,
+            0.588
+          ]
+        },
+        "faithful": {
+          "rate": 0.489,
+          "k": 22,
+          "n": 45,
+          "ci95": [
+            0.35,
+            0.63
+          ]
+        },
+        "false_abstention": {
+          "rate": 0.178,
+          "k": 8,
+          "n": 45,
+          "ci95": [
+            0.093,
+            0.313
+          ]
+        },
+        "reference_numbers_in_answer": {
+          "rate": 0.556,
+          "k": 15,
+          "n": 27,
+          "ci95": [
+            0.373,
+            0.724
+          ]
+        },
+        "correctness_mean": 0.578
+      },
+      "after": {
+        "correct": {
+          "rate": 0.689,
+          "k": 31,
+          "n": 45,
+          "ci95": [
+            0.543,
+            0.805
+          ]
+        },
+        "faithful": {
+          "rate": 0.778,
+          "k": 35,
+          "n": 45,
+          "ci95": [
+            0.637,
+            0.875
+          ]
+        },
+        "false_abstention": {
+          "rate": 0.0,
+          "k": 0,
+          "n": 45,
+          "ci95": [
+            0.0,
+            0.079
+          ]
+        },
+        "reference_numbers_in_answer": {
+          "rate": 0.815,
+          "k": 22,
+          "n": 27,
+          "ci95": [
+            0.633,
+            0.918
+          ]
+        },
+        "correctness_mean": 0.822
+      },
+      "paired": {
+        "n": 45,
+        "better": 17,
+        "worse": 2,
+        "same": 26,
+        "sign_test_p": 0.001
+      }
+    },
+    "all": {
+      "before": {
+        "correct": {
+          "rate": 0.444,
+          "k": 40,
+          "n": 90,
+          "ci95": [
+            0.346,
+            0.547
+          ]
+        },
+        "faithful": {
+          "rate": 0.522,
+          "k": 47,
+          "n": 90,
+          "ci95": [
+            0.42,
+            0.622
+          ]
+        },
+        "false_abstention": {
+          "rate": 0.167,
+          "k": 15,
+          "n": 90,
+          "ci95": [
+            0.104,
+            0.257
+          ]
+        },
+        "reference_numbers_in_answer": {
+          "rate": 0.517,
+          "k": 31,
+          "n": 60,
+          "ci95": [
+            0.393,
+            0.638
+          ]
+        },
+        "correctness_mean": 0.583
+      },
+      "after": {
+        "correct": {
+          "rate": 0.6,
+          "k": 54,
+          "n": 90,
+          "ci95": [
+            0.497,
+            0.695
+          ]
+        },
+        "faithful": {
+          "rate": 0.7,
+          "k": 63,
+          "n": 90,
+          "ci95": [
+            0.599,
+            0.785
+          ]
+        },
+        "false_abstention": {
+          "rate": 0.0,
+          "k": 0,
+          "n": 90,
+          "ci95": [
+            0.0,
+            0.041
+          ]
+        },
+        "reference_numbers_in_answer": {
+          "rate": 0.717,
+          "k": 43,
+          "n": 60,
+          "ci95": [
+            0.592,
+            0.815
+          ]
+        },
+        "correctness_mean": 0.75
+      },
+      "paired": {
+        "n": 90,
+        "better": 26,
+        "worse": 4,
+        "same": 60,
+        "sign_test_p": 0.0
+      }
+    }
+  },
+  "injection": {
+    "fr": {
+      "before": {
+        "correct": {
+          "rate": 0.556,
+          "k": 25,
+          "n": 45,
+          "ci95": [
+            0.412,
+            0.691
+          ]
+        },
+        "faithful": {
+          "rate": 0.5,
+          "k": 25,
+          "n": 50,
+          "ci95": [
+            0.366,
+            0.634
+          ]
+        },
+        "false_abstention": {
+          "rate": 0.133,
+          "k": 6,
+          "n": 45,
+          "ci95": [
+            0.063,
+            0.262
+          ]
+        },
+        "reference_numbers_in_answer": {
+          "rate": 0.485,
+          "k": 16,
+          "n": 33,
+          "ci95": [
+            0.325,
+            0.648
+          ]
+        },
+        "out_of_scope_abstained": {
+          "rate": 0.8,
+          "k": 4,
+          "n": 5,
+          "ci95": [
+            0.376,
+            0.964
+          ]
+        },
+        "injection_success": {
+          "rate": 0.5,
+          "k": 25,
+          "n": 50,
+          "ci95": [
+            0.366,
+            0.634
+          ]
+        },
+        "injection_success_direct": {
+          "rate": 0.0,
+          "k": 0,
+          "n": 25,
+          "ci95": [
+            0.0,
+            0.133
+          ]
+        },
+        "injection_success_system": {
+          "rate": 1.0,
+          "k": 25,
+          "n": 25,
+          "ci95": [
+            0.867,
+            1.0
+          ]
+        },
+        "correctness_mean": 0.633
+      },
+      "after": {
+        "correct": {
+          "rate": 0.556,
+          "k": 25,
+          "n": 45,
+          "ci95": [
+            0.412,
+            0.691
+          ]
+        },
+        "faithful": {
+          "rate": 0.6,
+          "k": 30,
+          "n": 50,
+          "ci95": [
+            0.462,
+            0.724
+          ]
+        },
+        "false_abstention": {
+          "rate": 0.067,
+          "k": 3,
+          "n": 45,
+          "ci95": [
+            0.023,
+            0.179
+          ]
+        },
+        "reference_numbers_in_answer": {
+          "rate": 0.515,
+          "k": 17,
+          "n": 33,
+          "ci95": [
+            0.352,
+            0.675
+          ]
+        },
+        "out_of_scope_abstained": {
+          "rate": 0.6,
+          "k": 3,
+          "n": 5,
+          "ci95": [
+            0.231,
+            0.882
+          ]
+        },
+        "injection_success": {
+          "rate": 0.52,
+          "k": 26,
+          "n": 50,
+          "ci95": [
+            0.385,
+            0.652
+          ]
+        },
+        "injection_success_direct": {
+          "rate": 0.04,
+          "k": 1,
+          "n": 25,
+          "ci95": [
+            0.007,
+            0.195
+          ]
+        },
+        "injection_success_system": {
+          "rate": 1.0,
+          "k": 25,
+          "n": 25,
+          "ci95": [
+            0.867,
+            1.0
+          ]
+        },
+        "correctness_mean": 0.656
+      },
+      "paired": {
+        "n": 45,
+        "better": 11,
+        "worse": 8,
+        "same": 26,
+        "sign_test_p": 0.648
+      }
+    },
+    "en": {
+      "before": {
+        "correct": {
+          "rate": 0.311,
+          "k": 14,
+          "n": 45,
+          "ci95": [
+            0.195,
+            0.457
+          ]
+        },
+        "faithful": {
+          "rate": 0.3,
+          "k": 15,
+          "n": 50,
+          "ci95": [
+            0.191,
+            0.438
+          ]
+        },
+        "false_abstention": {
+          "rate": 0.089,
+          "k": 4,
+          "n": 45,
+          "ci95": [
+            0.035,
+            0.207
+          ]
+        },
+        "reference_numbers_in_answer": {
+          "rate": 0.222,
+          "k": 6,
+          "n": 27,
+          "ci95": [
+            0.106,
+            0.408
+          ]
+        },
+        "out_of_scope_abstained": {
+          "rate": 1.0,
+          "k": 5,
+          "n": 5,
+          "ci95": [
+            0.566,
+            1.0
+          ]
+        },
+        "injection_success": {
+          "rate": 0.6,
+          "k": 30,
+          "n": 50,
+          "ci95": [
+            0.462,
+            0.724
+          ]
+        },
+        "injection_success_direct": {
+          "rate": 0.2,
+          "k": 5,
+          "n": 25,
+          "ci95": [
+            0.089,
+            0.391
+          ]
+        },
+        "injection_success_system": {
+          "rate": 1.0,
+          "k": 25,
+          "n": 25,
+          "ci95": [
+            0.867,
+            1.0
+          ]
+        },
+        "correctness_mean": 0.467
+      },
+      "after": {
+        "correct": {
+          "rate": 0.467,
+          "k": 21,
+          "n": 45,
+          "ci95": [
+            0.329,
+            0.609
+          ]
+        },
+        "faithful": {
+          "rate": 0.42,
+          "k": 21,
+          "n": 50,
+          "ci95": [
+            0.294,
+            0.558
+          ]
+        },
+        "false_abstention": {
+          "rate": 0.044,
+          "k": 2,
+          "n": 45,
+          "ci95": [
+            0.012,
+            0.148
+          ]
+        },
+        "reference_numbers_in_answer": {
+          "rate": 0.185,
+          "k": 5,
+          "n": 27,
+          "ci95": [
+            0.082,
+            0.367
+          ]
+        },
+        "out_of_scope_abstained": {
+          "rate": 0.8,
+          "k": 4,
+          "n": 5,
+          "ci95": [
+            0.376,
+            0.964
+          ]
+        },
+        "injection_success": {
+          "rate": 0.76,
+          "k": 38,
+          "n": 50,
+          "ci95": [
+            0.626,
+            0.857
+          ]
+        },
+        "injection_success_direct": {
+          "rate": 0.52,
+          "k": 13,
+          "n": 25,
+          "ci95": [
+            0.335,
+            0.7
+          ]
+        },
+        "injection_success_system": {
+          "rate": 1.0,
+          "k": 25,
+          "n": 25,
+          "ci95": [
+            0.867,
+            1.0
+          ]
+        },
+        "correctness_mean": 0.533
+      },
+      "paired": {
+        "n": 45,
+        "better": 12,
+        "worse": 7,
+        "same": 26,
+        "sign_test_p": 0.359
+      }
+    },
+    "all": {
+      "before": {
+        "correct": {
+          "rate": 0.433,
+          "k": 39,
+          "n": 90,
+          "ci95": [
+            0.336,
+            0.536
+          ]
+        },
+        "faithful": {
+          "rate": 0.4,
+          "k": 40,
+          "n": 100,
+          "ci95": [
+            0.309,
+            0.498
+          ]
+        },
+        "false_abstention": {
+          "rate": 0.111,
+          "k": 10,
+          "n": 90,
+          "ci95": [
+            0.061,
+            0.193
+          ]
+        },
+        "reference_numbers_in_answer": {
+          "rate": 0.367,
+          "k": 22,
+          "n": 60,
+          "ci95": [
+            0.256,
+            0.493
+          ]
+        },
+        "out_of_scope_abstained": {
+          "rate": 0.9,
+          "k": 9,
+          "n": 10,
+          "ci95": [
+            0.596,
+            0.982
+          ]
+        },
+        "injection_success": {
+          "rate": 0.55,
+          "k": 55,
+          "n": 100,
+          "ci95": [
+            0.452,
+            0.644
+          ]
+        },
+        "injection_success_direct": {
+          "rate": 0.1,
+          "k": 5,
+          "n": 50,
+          "ci95": [
+            0.043,
+            0.214
+          ]
+        },
+        "injection_success_system": {
+          "rate": 1.0,
+          "k": 50,
+          "n": 50,
+          "ci95": [
+            0.929,
+            1.0
+          ]
+        },
+        "correctness_mean": 0.55
+      },
+      "after": {
+        "correct": {
+          "rate": 0.511,
+          "k": 46,
+          "n": 90,
+          "ci95": [
+            0.41,
+            0.612
+          ]
+        },
+        "faithful": {
+          "rate": 0.51,
+          "k": 51,
+          "n": 100,
+          "ci95": [
+            0.413,
+            0.606
+          ]
+        },
+        "false_abstention": {
+          "rate": 0.056,
+          "k": 5,
+          "n": 90,
+          "ci95": [
+            0.024,
+            0.124
+          ]
+        },
+        "reference_numbers_in_answer": {
+          "rate": 0.367,
+          "k": 22,
+          "n": 60,
+          "ci95": [
+            0.256,
+            0.493
+          ]
+        },
+        "out_of_scope_abstained": {
+          "rate": 0.7,
+          "k": 7,
+          "n": 10,
+          "ci95": [
+            0.397,
+            0.892
+          ]
+        },
+        "injection_success": {
+          "rate": 0.64,
+          "k": 64,
+          "n": 100,
+          "ci95": [
+            0.542,
+            0.727
+          ]
+        },
+        "injection_success_direct": {
+          "rate": 0.28,
+          "k": 14,
+          "n": 50,
+          "ci95": [
+            0.175,
+            0.417
+          ]
+        },
+        "injection_success_system": {
+          "rate": 1.0,
+          "k": 50,
+          "n": 50,
+          "ci95": [
+            0.929,
+            1.0
+          ]
+        },
+        "correctness_mean": 0.594
+      },
+      "paired": {
+        "n": 90,
+        "better": 23,
+        "worse": 15,
+        "same": 52,
+        "sign_test_p": 0.256
+      }
+    }
+  }
+}
