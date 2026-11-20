@@ -33,6 +33,7 @@ import time
 from datetime import date
 from pathlib import Path
 
+from evaluation.context_coverage import facts
 from evaluation.perturb import CANARY, inject, seed_for, typos
 from evaluation.retrieval_eval import load_jsonl, wilson
 from rag_assistant.config import ANSWER_MODEL, JUDGE_MODEL, RESULTS_DIR
@@ -61,7 +62,7 @@ def build_variants() -> dict[str, list[dict]]:
     }
 
 
-def generate_and_judge(variant: str, items: list[dict], limit: int | None) -> None:
+def generate_and_judge(variant: str, items: list[dict], limit: int | None, raw_dir: Path = RAW_DIR) -> None:
     from evaluation.judge import judge
     from rag_assistant.agent import build_graph, run
     from rag_assistant.llm import get_chat_model
@@ -72,8 +73,8 @@ def generate_and_judge(variant: str, items: list[dict], limit: int | None) -> No
     # A fixed "today" keeps the prompt identical between runs.
     graph = build_graph(get_chat_model(), retriever, today="2026-11-18")
 
-    RAW_DIR.mkdir(parents=True, exist_ok=True)
-    path = RAW_DIR / f"{variant}.jsonl"
+    raw_dir.mkdir(parents=True, exist_ok=True)
+    path = raw_dir / f"{variant}.jsonl"
     done = {r["id"] for r in load_jsonl(path)} if path.exists() else set()
     todo = [q for q in items if q["id"] not in done][:limit]
     print(f"[{variant}] {len(done)} done, {len(todo)} to run")
@@ -133,6 +134,11 @@ def summarise(records: list[dict]) -> dict:
         "citation_hit": rate([gold_hit(r, "citations") for r in answerable]),
         "language_match": rate([detect_language(r["answer"]) == r["lang"] for r in records]),
         "false_abstention": rate([declined(r["answer"]) for r in answerable]),
+        # No judge: does the answer contain every number-with-unit of the reference ("3 mois",
+        # "10 %")? A rough check (a number can be written another way), but it does not depend
+        # on a judge that may favour answers from its own model.
+        "reference_numbers_in_answer": rate([facts(r["reference"]) <= facts(r["answer"])
+                                             for r in answerable if facts(r["reference"])]),
     }
     if oos:
         out["out_of_scope_abstained"] = rate([declined(r["answer"]) for r in oos])
@@ -156,10 +162,15 @@ def token_totals(records: list[dict]) -> dict:
     for part in ("answer", "judge"):
         out[part] = {key: total(part, key) for key in ("llm_calls", "input_tokens", "output_tokens")}
     out["answer"]["est_cost_usd"] = estimate_cost(out["answer"]["input_tokens"], out["answer"]["output_tokens"])
+    out["judge"]["est_cost_usd"] = estimate_cost(out["judge"]["input_tokens"], out["judge"]["output_tokens"],
+                                                 model=JUDGE_MODEL)
+    seconds = [r["seconds"] for r in records if "seconds" in r]
+    # Time per item includes the judge's call, so it is longer than what a user waits.
+    out["median_seconds_per_item"] = sorted(seconds)[len(seconds) // 2] if seconds else None
     return out
 
 
-def summary_report() -> dict:
+def summary_report(results_dir: Path = RESULTS_DIR) -> dict:
     report = {"meta": {
         "date": date.today().isoformat(),
         "answer_model": ANSWER_MODEL, "judge_model": JUDGE_MODEL,
@@ -170,7 +181,7 @@ def summary_report() -> dict:
     }, "variants": {}}
     all_records = []
     for variant in VARIANT_NAMES:
-        path = RAW_DIR / f"{variant}.jsonl"
+        path = results_dir / "answers" / f"{variant}.jsonl"
         if not path.exists():
             continue
         records = load_jsonl(path)
@@ -178,7 +189,7 @@ def summary_report() -> dict:
         report["variants"][variant] = {"all": summarise(records)} | {
             lang: summarise([r for r in records if r["lang"] == lang]) for lang in ("fr", "en")}
     report["meta"]["tokens"] = token_totals(all_records)
-    out = RESULTS_DIR / "answer_eval.json"
+    out = results_dir / "answer_eval.json"
     out.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"saved {out}")
     return report
@@ -205,12 +216,15 @@ def main() -> None:
     parser.add_argument("--limit", type=int, default=None, help="max new items per variant (for a quick try)")
     parser.add_argument("--summary-only", action="store_true")
     parser.add_argument("--check", action="store_true", help="exit 1 if below the thresholds (for CI)")
+    parser.add_argument("--out", type=Path, default=RESULTS_DIR,
+                        help="folder for this run (answers/ and answer_eval.json), e.g. to try another "
+                             "model with ANSWER_MODEL=... without overwriting the main results")
     args = parser.parse_args()
     if not args.summary_only:
         variants = build_variants()
         for v in args.variants:
-            generate_and_judge(v, variants[v], args.limit)
-    report = summary_report()
+            generate_and_judge(v, variants[v], args.limit, raw_dir=args.out / "answers")
+    report = summary_report(args.out)
     for v, res in report["variants"].items():
         a = res["all"]
         print(f"{v:11s} n={a['n']:3d} correct={a['correct']['rate']} faithful={a['faithful']['rate']} "

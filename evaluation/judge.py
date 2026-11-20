@@ -7,8 +7,9 @@ Known limits (written in the README too):
 - The judge is from the same model family as the answering model, which can
   favour its own style. evaluation/judge_agreement.py measures how often the
   judge agrees with a human on a sample.
-- Faithfulness is checked against the cited chunks only, so an answer that
-  states facts without citing anything is marked unfaithful.
+- Faithfulness is checked against the cited sources only (each with the
+  neighbouring chunks the model saw), so an answer that states facts without
+  citing anything is marked unfaithful.
 """
 
 from __future__ import annotations
@@ -60,8 +61,10 @@ SCORE = {"correct": 1.0, "partial": 0.5, "incorrect": 0.0}
 
 
 def cited_text(result: dict, sources_by_chunk: dict[str, dict]) -> str:
+    """The text the model saw for each source it cited: the hit and its neighbouring chunks
+    (results from before neighbours were added have one chunk per source)."""
     cited_n = {c["n"] for c in result["citations"]}
-    parts = [f"[{r['n']}] {sources_by_chunk[r['chunk_id']]['text']}"
+    parts = [f"[{r['n']}] " + "\n".join(sources_by_chunk[cid]["text"] for cid in r.get("chunk_ids", [r["chunk_id"]]))
              for r in result["retrieved"] if r["n"] in cited_n]
     return "\n\n".join(parts) if parts else "(no source cited)"
 

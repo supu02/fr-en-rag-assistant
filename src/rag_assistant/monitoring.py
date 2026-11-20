@@ -42,6 +42,8 @@ from rag_assistant.config import ANSWER_MODEL
 # with the environment variables below.
 PRICES_PER_M = {
     "mistral.ministral-3-14b-instruct": (0.24, 0.24),  # Bedrock, Europe (Ireland), Nov 2026
+    # Bedrock, US East (the only Region offering it), from the AWS Price List API, 20 Nov 2026.
+    "mistral.mistral-large-3-675b-instruct": (0.50, 1.50),
     # Mistral Small: third-party price lists, Sept 2026 (not shown on Mistral's own page).
     "mistral-small-latest": (0.15, 0.60),
     "mistral-large-latest": (0.50, 1.50),  # mistral.ai/pricing, Nov 2026

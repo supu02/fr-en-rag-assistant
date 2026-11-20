@@ -46,6 +46,7 @@ class Retriever:
         self.client = get_client()
         self.chunks = load_chunks()  # point id i in Qdrant == self.chunks[i]
         self.bm25 = BM25Okapi([tokenize(c["text"]) for c in self.chunks])
+        self._position = {c["chunk_id"]: i for i, c in enumerate(self.chunks)}
         self._lock = threading.Lock()  # Qdrant local mode is not made for parallel calls
 
     def dense(self, query: str, k: int = TOP_K) -> list[dict]:
@@ -95,6 +96,41 @@ class Retriever:
             raise ValueError(f"method must be one of {METHODS}")
         with self._lock:
             return getattr(self, method)(query, k)
+
+    def add_context(self, hits: list[dict]) -> list[dict]:
+        return with_neighbours(hits, self.chunks, self._position)
+
+
+def with_neighbours(hits: list[dict], chunks: list[dict], position: dict[str, int]) -> list[dict]:
+    """Give each hit the chunk just before and just after it on the same page.
+
+    Pages are cut into small chunks (median 690 characters), so the chunk that matches
+    the question often names the case while the number sits in the next one. On the 33
+    French test questions whose reference answer has a number, all of its numbers were in
+    the 5 retrieved chunks for 25; with the neighbours, for 29 (10 chunks: 27).
+    Measured by evaluation/context_coverage.py.
+    A hit already shown as an earlier hit's neighbour is dropped, so no text is repeated.
+    `chunks` is in page order and `position` maps a chunk_id to its index in it.
+    """
+    used: set[int] = set()
+    out = []
+    for hit in hits:
+        i = position[hit["chunk_id"]]
+        if i in used:
+            continue
+        window = [j for j in (i - 1, i, i + 1)
+                  if 0 <= j < len(chunks) and chunks[j]["page_id"] == hit["page_id"] and j not in used]
+        used.update(window)
+        heading, _, body = chunks[i]["text"].partition("\n")
+        parts = []
+        for j in window:
+            text = body if j == i else chunks[j]["text"].partition("\n")[2]
+            if j != i and chunks[j]["section"] != hit["section"]:
+                text = f"({chunks[j]['section']})\n{text}"  # a neighbour can be about another case
+            parts.append(text)
+        out.append({**hit, "text": heading + "\n" + "\n\n".join(parts),
+                    "chunk_ids": [chunks[j]["chunk_id"] for j in window]})
+    return out
 
 
 @lru_cache(maxsize=1)

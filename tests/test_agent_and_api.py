@@ -27,6 +27,9 @@ class FakeRetriever:
         self.queries.append(query)
         return [{**s, "score": 0.9} for s in SOURCES[:k]]
 
+    def add_context(self, hits):
+        return hits
+
 
 class FakeToolLLM(FakeMessagesListChatModel):
     """Returns the scripted messages in order; accepts bind_tools like a real model."""
@@ -39,6 +42,44 @@ def test_format_sources_numbers_each_chunk():
     text = format_sources(SOURCES)
     assert text.startswith("[1] Préavis du locataire > Logement meublé\nLe préavis est de 1 mois.")
     assert "[2] Dépôt de garantie > Logement vide" in text
+
+
+def test_translation_is_cleaned_before_search():
+    """Additions seen in the first evaluation's translated queries."""
+    from rag_assistant.agent import clean_translation
+
+    q = "What is the maximum deposit for an unfurnished flat?"
+    assert clean_translation("Quel est le **dépôt de garantie maximal** pour un logement vide ? (en France, en **2024**)",
+                             q) == "Quel est le dépôt de garantie maximal pour un logement vide ?"
+    assert clean_translation("À la fin de mon CDD avec [nom de l'employeur si connu], ai-je droit à une prime ?\n"
+                             "Note : traduction littérale.", q) == "À la fin de mon CDD avec, ai-je droit à une prime ?"
+    assert clean_translation("Traduction : Puis-je avoir un chat ?", q) == "Puis-je avoir un chat ?"
+    # Brackets the question itself had are kept; an empty reply falls back to the question.
+    assert clean_translation("Ai-je droit à l'APL (aide au logement) ?", "Can I get APL (housing aid)?") == \
+        "Ai-je droit à l'APL (aide au logement) ?"
+    assert clean_translation("**  **", q) == q
+
+
+def test_neighbouring_chunks_are_added_once_and_stay_on_the_page():
+    from rag_assistant.retrieve import with_neighbours
+
+    def chunk(cid, section, body):
+        page = cid.split("#")[0]
+        return {"chunk_id": cid, "page_id": page, "page_title": page, "section": section, "url": "",
+                "text": f"{page} > {section}\n{body}"}
+
+    chunks = [chunk("A#0", "Logement vide", "Cas général."), chunk("A#1", "Logement vide", "Le préavis..."),
+              chunk("A#2", "Logement vide", "...est de 3 mois."), chunk("A#3", "Logement meublé", "1 mois."),
+              chunk("B#0", "Intro", "Autre page.")]
+    position = {c["chunk_id"]: i for i, c in enumerate(chunks)}
+    hits = [{**chunks[1], "score": 0.9}, {**chunks[2], "score": 0.8}, {**chunks[3], "score": 0.7}]
+    out = with_neighbours(hits, chunks, position)
+
+    assert [s["chunk_ids"] for s in out] == [["A#0", "A#1", "A#2"], ["A#3"]]  # A#2 was already shown
+    assert out[0]["text"] == "A > Logement vide\nCas général.\n\nLe préavis...\n\n...est de 3 mois."
+    assert out[0]["score"] == 0.9 and "B#0" not in out[1]["chunk_ids"]  # no text from another page
+    hits = [{**chunks[2], "score": 0.9}]
+    assert "(Logement meublé)\n1 mois." in with_neighbours(hits, chunks, position)[0]["text"]
 
 
 def test_english_question_is_translated_for_search_and_tool_is_called():

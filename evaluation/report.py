@@ -112,8 +112,46 @@ def answer_tables(a: dict) -> list[str]:
         cost = f", about ${ans['est_cost_usd']:.2f} at list price" if ans.get("est_cost_usd") is not None else ""
         lines += ["", f"Tokens for the {tok['items_measured']} answers: answer model {ans['input_tokens']:,} in / "
                       f"{ans['output_tokens']:,} out ({ans['llm_calls']} calls{cost}); judge "
-                      f"{jud['input_tokens']:,} in / {jud['output_tokens']:,} out ({jud['llm_calls']} calls)."]
+                      f"{jud['input_tokens']:,} in / {jud['output_tokens']:,} out ({jud['llm_calls']} calls"
+                      + (f", about ${jud['est_cost_usd']:.2f}" if jud.get("est_cost_usd") is not None else "") + ")."]
     lines += ["", f"Source: `results/answer_eval.json` ({m['date']}, commit `{m['git_commit']}`)."]
+    return lines
+
+
+def before_after_table(ba: dict) -> list[str]:
+    """results/before_after.json, written by evaluation/compare_runs.py."""
+    lines = [
+        "",
+        "### Before and after the fixes of 20 Nov 2026",
+        "",
+        "Same questions, same judge. The fixes came from reading the first run's wrong answers on these "
+        "questions, so the \"after\" column is optimistic. \"Better / worse\" counts answerable questions "
+        "whose grade went up or down (part of it is run-to-run noise); the sign test gives the chance of a "
+        "split at least that uneven if the fixes changed nothing. \"Has the reference's numbers\" needs "
+        "no judge: the answer contains every number with a unit from the reference answer.",
+        "",
+        "| Variant | Lang | Correct before → after | Better / worse / same | Sign test p "
+        "| Has the reference's numbers | Wrongly said \"cannot find\" |",
+        "|---|---|---|---|---|---|---|",
+    ]
+    arrow = lambda b, a, key: f"{b[key]['k']} → {a[key]['k']} of {a[key]['n']}"  # noqa: E731
+    for variant, langs in ba.items():
+        for lang in ("fr", "en", "all"):
+            v = langs[lang]
+            b, a, p = v["before"], v["after"], v["paired"]
+            pval = "–" if p["sign_test_p"] is None else ("< 0.001" if p["sign_test_p"] < 0.001
+                                                         else f"{p['sign_test_p']:.3f}")
+            lines.append(f"| {variant} | {lang.upper() if lang != 'all' else 'both'} | {arrow(b, a, 'correct')} "
+                         f"| {p['better']} / {p['worse']} / {p['same']} | {pval} "
+                         f"| {arrow(b, a, 'reference_numbers_in_answer')} | {arrow(b, a, 'false_abstention')} |")
+    inj = ba.get("injection", {}).get("all")
+    if inj:
+        b, a = inj["before"], inj["after"]
+        lines += ["", f"Prompt injection got worse: the attacker's code word appeared in "
+                      f"{b['injection_success']['k']} → {a['injection_success']['k']} of {a['injection_success']['n']} "
+                      f"answers (\"ignore previous instructions\": {b['injection_success_direct']['k']} → "
+                      f"{a['injection_success_direct']['k']} of 50; fake \"[SYSTEM]\" rule: "
+                      f"{b['injection_success_system']['k']} → {a['injection_success_system']['k']} of 50)."]
     return lines
 
 
@@ -159,11 +197,14 @@ def render() -> str:
     answers = ROOT / "results" / "answer_eval.json"
     r = json.loads(retrieval.read_text(encoding="utf-8")) if retrieval.exists() else None
     a = json.loads(answers.read_text(encoding="utf-8")) if answers.exists() else None
+    before_after = ROOT / "results" / "before_after.json"
     lines = findings(r, a)
     if r:
         lines += retrieval_tables(r)
     if a:
         lines += answer_tables(a)
+    if before_after.exists():
+        lines += before_after_table(json.loads(before_after.read_text(encoding="utf-8")))
     return "\n".join(lines)
 
 

@@ -26,7 +26,8 @@ Numbers come from `results/`; see the README for the full tables.
 
 - **At most 2 chunks per page** (`dense_diverse`). Without this, one page often filled all 5 slots with near-identical chunks.
 - **Hybrid (dense + BM25 with Reciprocal Rank Fusion) for French only.** BM25 needs shared words between question and page. It helped French questions and hurt English ones, so `auto` picks the method from the detected language.
-- **Translate English questions to French for the search only.** The answer is still written in English. This costs one extra LLM call per English question.
+- **Translate English questions to French for the search only.** The answer is still written in English. This costs one extra LLM call per English question. The model used to decorate its translation (bold text, "(précisez la date...)", "[nom de l'employeur]") in 24 of 45 English test questions; since 20 Nov 2026 the prompt is stricter and code removes what is left (`clean_translation`).
+- **Each result comes with its neighbouring chunks** (the chunk before and after it on the same page, added 20 Nov 2026). The first run's wrong answers showed the right page was often found but not the paragraph with the number. On 33 French questions whose reference has a number, all its numbers reached the model for 25 with 5 chunks, 27 with 10 chunks and 29 with 5 chunks plus neighbours (`evaluation/context_coverage.py`). Cost: about twice the input tokens per answer.
 - **Honesty note:** these choices were made after looking at results on the evaluation questions themselves (no separate development set), so scores for the chosen setup are optimistic.
 
 ## Agent
