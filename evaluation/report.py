@@ -155,6 +155,45 @@ def before_after_table(ba: dict) -> list[str]:
     return lines
 
 
+def model_comparison_table(main_model: str, cmp: dict) -> list[str]:
+    """results/model_comparison/<name>/vs_main.json, written by evaluation/compare_runs.py."""
+    clean, other = cmp["clean"], cmp["answer_model"]
+    tok = clean["tokens"]
+    frac = lambda s: f"{s['k']}/{s['n']}"  # noqa: E731
+    rows = [("Correct, French", "correct", "fr"), ("Correct, English", "correct", "en"),
+            ("Has the reference's numbers (no judge)", "reference_numbers_in_answer", "all"),
+            ("Faithful to cited sources", "faithful", "all"),
+            ("Answers with no source number the app could read", "no_citation", "all"),
+            ("Cites a gold page", "citation_hit", "all"),
+            ("Wrongly said \"cannot find\"", "false_abstention", "all"),
+            ("Out-of-scope questions declined", "out_of_scope_abstained", "all"),
+            ("Date tool called on date questions", "date_questions_tool_used", "all")]
+    p = clean["all"]["paired"]
+    cost_ratio = tok["after"]["answer"]["est_cost_usd"] / tok["before"]["answer"]["est_cost_usd"]
+    lines = [
+        "",
+        f"### A bigger answer model? `{main_model}` vs `{other}`",
+        "",
+        "The 100 clean questions, same code and same judge. Caveat: the judge is the bigger model itself, "
+        "and models tend to grade their own answers kindly.",
+        "",
+        f"| Measure | `{main_model}` (used) | `{other}` |",
+        "|---|---|---|",
+        *[f"| {label} | {frac(clean[lang]['before'][key])} | {frac(clean[lang]['after'][key])} |"
+          for label, key, lang in rows],
+        f"| Answer model cost for these 100 answers (list price) | ${tok['before']['answer']['est_cost_usd']:.2f} "
+        f"| ${tok['after']['answer']['est_cost_usd']:.2f} |",
+        f"| Median seconds per question, judge included | {tok['before']['median_seconds_per_item']} "
+        f"| {tok['after']['median_seconds_per_item']} |",
+        "",
+        f"Question by question, the bigger model did better on {p['better']} and worse on {p['worse']} "
+        f"(sign test p = {p['sign_test_p']:.2f}): no clear gain, for {cost_ratio:.1f} times the answer cost. "
+        "It often wrote its source numbers without brackets (\"1,200 euros1\"), so the app could not link "
+        "the sources, and an answer without a readable source counts as unfaithful. The smaller model stays.",
+    ]
+    return lines
+
+
 def findings(r: dict | None, a: dict | None) -> list[str]:
     """Short sentences computed from the results, so the text never drifts from the data."""
     out = []
@@ -205,6 +244,9 @@ def render() -> str:
         lines += answer_tables(a)
     if before_after.exists():
         lines += before_after_table(json.loads(before_after.read_text(encoding="utf-8")))
+    if a:
+        for path in sorted((ROOT / "results" / "model_comparison").glob("*/vs_main.json")):
+            lines += model_comparison_table(a["meta"]["answer_model"], json.loads(path.read_text(encoding="utf-8")))
     return "\n".join(lines)
 
 

@@ -32,6 +32,7 @@ Numbers come from `results/`; see the README for the full tables.
 
 ## Agent
 
+- **A small answer model (Ministral 3 14B).** Mistral Large 3, a much larger model, was tried on the 100 clean questions on 20 Nov 2026 (README, "A bigger answer model?"): about as many answers better as worse, at twice the cost and slower. It often dropped the brackets around source numbers, so the app could not link the sources, and it skipped the date tool on half the date questions. Following the format could be prompted, but the accuracy gain was too small to justify it.
 - **LangGraph with explicit nodes** (translate → retrieve → agent ⇄ tools) instead of one big prompt or a generic ReAct agent. Each step can be tested and measured on its own, and retrieval always runs, so every answer has sources to cite.
 - **Date tool.** LLMs make mistakes with calendar arithmetic (for example, "1 month after 30 January"). The LLM picks the numbers from the sources; Python does the maths. Month arithmetic clamps to the end of the month, like the French rule for deadlines in months.
 - **Citations as `[n]`** referring to the numbered sources in the prompt. The code keeps only numbers that exist, and the API returns the page links.

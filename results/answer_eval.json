@@ -3,7 +3,7 @@
     "date": "2026-11-20",
     "answer_model": "mistral.ministral-3-14b-instruct",
     "judge_model": "mistral.mistral-large-3-675b-instruct",
-    "git_commit": "84177c3",
+    "git_commit": "abc727a",
     "note": "correct/faithful are LLM-judge grades; rates come with 95% Wilson intervals; small samples (n per language <= 50)",
     "tokens": {
       "items_measured": 380,
@@ -79,6 +79,15 @@
           "ci95": [
             0.017,
             0.109
+          ]
+        },
+        "no_citation": {
+          "rate": 0.14,
+          "k": 14,
+          "n": 100,
+          "ci95": [
+            0.085,
+            0.221
           ]
         },
         "reference_numbers_in_answer": {
@@ -175,6 +184,15 @@
             0.079
           ]
         },
+        "no_citation": {
+          "rate": 0.1,
+          "k": 5,
+          "n": 50,
+          "ci95": [
+            0.043,
+            0.214
+          ]
+        },
         "reference_numbers_in_answer": {
           "rate": 0.727,
           "k": 24,
@@ -267,6 +285,15 @@
           "ci95": [
             0.035,
             0.207
+          ]
+        },
+        "no_citation": {
+          "rate": 0.18,
+          "k": 9,
+          "n": 50,
+          "ci95": [
+            0.098,
+            0.308
           ]
         },
         "reference_numbers_in_answer": {
@@ -365,6 +392,15 @@
             0.109
           ]
         },
+        "no_citation": {
+          "rate": 0.056,
+          "k": 5,
+          "n": 90,
+          "ci95": [
+            0.024,
+            0.124
+          ]
+        },
         "reference_numbers_in_answer": {
           "rate": 0.617,
           "k": 37,
@@ -450,6 +486,15 @@
             0.116
           ]
         },
+        "no_citation": {
+          "rate": 0.044,
+          "k": 2,
+          "n": 45,
+          "ci95": [
+            0.012,
+            0.148
+          ]
+        },
         "reference_numbers_in_answer": {
           "rate": 0.636,
           "k": 21,
@@ -527,6 +572,15 @@
           ]
         },
         "false_abstention": {
+          "rate": 0.067,
+          "k": 3,
+          "n": 45,
+          "ci95": [
+            0.023,
+            0.179
+          ]
+        },
+        "no_citation": {
           "rate": 0.067,
           "k": 3,
           "n": 45,
@@ -622,6 +676,15 @@
             0.041
           ]
         },
+        "no_citation": {
+          "rate": 0.067,
+          "k": 6,
+          "n": 90,
+          "ci95": [
+            0.031,
+            0.138
+          ]
+        },
         "reference_numbers_in_answer": {
           "rate": 0.717,
           "k": 43,
@@ -705,6 +768,15 @@
           "ci95": [
             0.0,
             0.079
+          ]
+        },
+        "no_citation": {
+          "rate": 0.089,
+          "k": 4,
+          "n": 45,
+          "ci95": [
+            0.035,
+            0.207
           ]
         },
         "reference_numbers_in_answer": {
@@ -792,6 +864,15 @@
             0.079
           ]
         },
+        "no_citation": {
+          "rate": 0.044,
+          "k": 2,
+          "n": 45,
+          "ci95": [
+            0.012,
+            0.148
+          ]
+        },
         "reference_numbers_in_answer": {
           "rate": 0.815,
           "k": 22,
@@ -877,6 +958,15 @@
           "ci95": [
             0.024,
             0.124
+          ]
+        },
+        "no_citation": {
+          "rate": 0.68,
+          "k": 68,
+          "n": 100,
+          "ci95": [
+            0.583,
+            0.763
           ]
         },
         "reference_numbers_in_answer": {
@@ -1000,6 +1090,15 @@
             0.179
           ]
         },
+        "no_citation": {
+          "rate": 0.58,
+          "k": 29,
+          "n": 50,
+          "ci95": [
+            0.442,
+            0.706
+          ]
+        },
         "reference_numbers_in_answer": {
           "rate": 0.515,
           "k": 17,
@@ -1119,6 +1218,15 @@
           "ci95": [
             0.012,
             0.148
+          ]
+        },
+        "no_citation": {
+          "rate": 0.78,
+          "k": 39,
+          "n": 50,
+          "ci95": [
+            0.648,
+            0.872
           ]
         },
         "reference_numbers_in_answer": {

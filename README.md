@@ -94,7 +94,7 @@ Source: `results/retrieval.json` (2026-11-18, 8652 chunks, `intfloat/multilingua
 
 Tokens for the 380 answers: answer model 1,309,544 in / 43,845 out (621 calls, about $0.32 at list price); judge 473,350 in / 43,796 out (380 calls, about $0.30).
 
-Source: `results/answer_eval.json` (2026-11-20, commit `84177c3`).
+Source: `results/answer_eval.json` (2026-11-20, commit `abc727a`).
 
 ### Before and after the fixes of 20 Nov 2026
 
@@ -116,6 +116,26 @@ Same questions, same judge. The fixes came from reading the first run's wrong an
 | injection | both | 39 → 46 of 90 | 23 / 15 / 52 | 0.256 | 22 → 22 of 60 | 10 → 5 of 90 |
 
 Prompt injection got worse: the attacker's code word appeared in 55 → 64 of 100 answers ("ignore previous instructions": 5 → 14 of 50; fake "[SYSTEM]" rule: 50 → 50 of 50).
+
+### A bigger answer model? `mistral.ministral-3-14b-instruct` vs `mistral.mistral-large-3-675b-instruct`
+
+The 100 clean questions, same code and same judge. Caveat: the judge is the bigger model itself, and models tend to grade their own answers kindly.
+
+| Measure | `mistral.ministral-3-14b-instruct` (used) | `mistral.mistral-large-3-675b-instruct` |
+|---|---|---|
+| Correct, French | 32/45 | 36/45 |
+| Correct, English | 30/45 | 29/45 |
+| Has the reference's numbers (no judge) | 40/60 | 46/60 |
+| Faithful to cited sources | 77/100 | 59/100 |
+| Answers with no source number the app could read | 14/100 | 38/100 |
+| Cites a gold page | 84/90 | 61/90 |
+| Wrongly said "cannot find" | 4/90 | 0/90 |
+| Out-of-scope questions declined | 10/10 | 9/10 |
+| Date tool called on date questions | 14/16 | 8/16 |
+| Answer model cost for these 100 answers (list price) | $0.09 | $0.18 |
+| Median seconds per question, judge included | 3.2 | 4.5 |
+
+Question by question, the bigger model did better on 16 and worse on 11 (sign test p = 0.44): no clear gain, for 2.1 times the answer cost. It often wrote its source numbers without brackets ("1,200 euros1"), so the app could not link the sources, and an answer without a readable source counts as unfaithful. The smaller model stays.
 <!-- RESULTS:END -->
 
 ## How it works

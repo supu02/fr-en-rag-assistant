@@ -90,7 +90,7 @@ def generate_and_judge(variant: str, items: list[dict], limit: int | None, raw_d
                   "gold_pages": q["gold_pages"], "question": q["question"], "reference": q["reference"],
                   **{k: result[k] for k in ("answer", "search_query", "citations", "retrieved", "tool_calls",
                                             "usage")},
-                  "judge": verdict, "seconds": round(time.time() - start, 1)}
+                  "judge": verdict, "seconds": round(time.time() - start, 1), "answer_model": ANSWER_MODEL}
         if "injection_style" in q:
             record["injection_style"] = q["injection_style"]
         with path.open("a", encoding="utf-8") as fh:
@@ -134,6 +134,7 @@ def summarise(records: list[dict]) -> dict:
         "citation_hit": rate([gold_hit(r, "citations") for r in answerable]),
         "language_match": rate([detect_language(r["answer"]) == r["lang"] for r in records]),
         "false_abstention": rate([declined(r["answer"]) for r in answerable]),
+        "no_citation": rate([not r["citations"] for r in records]),  # no [n] the app could read
         # No judge: does the answer contain every number-with-unit of the reference ("3 mois",
         # "10 %")? A rough check (a number can be written another way), but it does not depend
         # on a judge that may favour answers from its own model.
@@ -153,7 +154,7 @@ def summarise(records: list[dict]) -> dict:
     return out
 
 
-def token_totals(records: list[dict]) -> dict:
+def token_totals(records: list[dict], answer_model: str = ANSWER_MODEL) -> dict:
     """Tokens used by the answering model and by the judge over the whole run."""
     measured = [r for r in records if "usage" in r and "usage" in r["judge"]]
     total = lambda part, key: sum(  # noqa: E731
@@ -161,7 +162,8 @@ def token_totals(records: list[dict]) -> dict:
     out = {"items_measured": len(measured)}
     for part in ("answer", "judge"):
         out[part] = {key: total(part, key) for key in ("llm_calls", "input_tokens", "output_tokens")}
-    out["answer"]["est_cost_usd"] = estimate_cost(out["answer"]["input_tokens"], out["answer"]["output_tokens"])
+    out["answer"]["est_cost_usd"] = estimate_cost(out["answer"]["input_tokens"], out["answer"]["output_tokens"],
+                                                  model=answer_model)
     out["judge"]["est_cost_usd"] = estimate_cost(out["judge"]["input_tokens"], out["judge"]["output_tokens"],
                                                  model=JUDGE_MODEL)
     seconds = [r["seconds"] for r in records if "seconds" in r]
@@ -189,6 +191,9 @@ def summary_report(results_dir: Path = RESULTS_DIR) -> dict:
         report["variants"][variant] = {"all": summarise(records)} | {
             lang: summarise([r for r in records if r["lang"] == lang]) for lang in ("fr", "en")}
     report["meta"]["tokens"] = token_totals(all_records)
+    models = {r["answer_model"] for r in all_records if "answer_model" in r}
+    if models and models != {ANSWER_MODEL}:  # e.g. --summary-only on another model's folder without ANSWER_MODEL
+        raise SystemExit(f"These answers come from {sorted(models)}: set ANSWER_MODEL to match before summarising.")
     out = results_dir / "answer_eval.json"
     out.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"saved {out}")
