@@ -180,6 +180,10 @@ flowchart LR
 - **Scope and freshness.** 362 pages, one snapshot (18 November 2026). Rules change; the live pages are the reference.
 - **Date tool.** Calendar dates only: it does not apply legal extension rules (for example, a deadline that ends on a Sunday or public holiday), but it reports the weekday.
 
+## How I built this
+
+I built this project in November 2026 to learn how to take an LLM application from an idea to a deployed, measured service. I chose the problem, the data and the evaluation design, and I decided what to fix after reading the wrong answers and which model to keep after comparing it with Mistral Large 3. I wrote the code with Claude Code as my coding assistant, which is why it appears as co-author on the commits. I reviewed the changes and ran the evaluations and the deployment myself.
+
 ## Deployment and monitoring
 
 - **Deployment:** the Docker image runs on **AWS Lambda** behind a public function URL
